@@ -25,4 +25,13 @@ public static class YtDlpArguments
         args.Add(url.AbsoluteUri);
         return args;
     }
+
+    public static IReadOnlyList<string> ForDownload(
+        Uri url,
+        string formatSelector,
+        string outputTemplate,
+        string? mergeExtension,
+        string? ffmpegLocation,
+        string? cookiesFile,
+        long maxBytes) => throw new NotImplementedException();
 }
