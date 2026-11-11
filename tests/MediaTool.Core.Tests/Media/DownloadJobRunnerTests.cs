@@ -15,6 +15,7 @@ public class DownloadJobRunnerTests
 
     private readonly IYtDlpClient _client = Substitute.For<IYtDlpClient>();
     private readonly ITempFileManager _temp = Substitute.For<ITempFileManager>();
+    private readonly IFfmpegRunner _ffmpeg = Substitute.For<IFfmpegRunner>();
     private readonly JobStore _store = new();
 
     private static readonly QualityOption Hd = new("720p", QualityKind.Video, "136+140", "mp4", 1280, 720, true, 30 * MB, false, false);
@@ -22,7 +23,7 @@ public class DownloadJobRunnerTests
     private static DownloadRequest Request(QualityOption? option = null) =>
         new(new Uri("https://youtu.be/abc"), "My: \"video\"", option ?? Hd);
 
-    private DownloadJobRunner Sut => new(_client, _temp, _store, NullLogger<DownloadJobRunner>.Instance);
+    private DownloadJobRunner Sut => new(_client, _temp, _ffmpeg, _store, NullLogger<DownloadJobRunner>.Instance);
 
     public DownloadJobRunnerTests()
     {
@@ -163,6 +164,51 @@ public class DownloadJobRunnerTests
         await Sut.RunAsync(job.Id, Request(), cts.Token);
 
         _store.Get(job.Id)!.Status.Should().Be(JobStatus.Cancelled);
+        _temp.Received().DeleteJobFolder(job.Id);
+    }
+
+    [Fact]
+    public async Task Sound_is_removed_when_the_option_asks_for_it()
+    {
+        var silent = Hd with { FormatSelector = "18", HasAudio = false, RemoveAudio = true };
+        var job = Start(Request(silent));
+        _temp.FindOutput(job.Id).Returns(
+            new OutputFile(@"C:\Temp\MediaTool\x\media.mp4", 20 * MB),
+            new OutputFile(@"C:\Temp\MediaTool\x\media.mp4", 18 * MB));
+
+        await Sut.RunAsync(job.Id, Request(silent), CancellationToken.None);
+
+        await _ffmpeg.Received(1).RemoveAudioAsync(@"C:\Temp\MediaTool\x\media.mp4", Arg.Any<CancellationToken>());
+        var done = _store.Get(job.Id)!;
+        done.Status.Should().Be(JobStatus.Completed);
+        done.FileSizeBytes.Should().Be(18 * MB, "the size is re-read after removing sound");
+    }
+
+    [Fact]
+    public async Task Sound_is_left_alone_for_normal_options()
+    {
+        var job = Start(Request());
+        _temp.FindOutput(job.Id).Returns(new OutputFile("f.mp4", MB));
+
+        await Sut.RunAsync(job.Id, Request(), CancellationToken.None);
+
+        await _ffmpeg.DidNotReceiveWithAnyArgs().RemoveAudioAsync(default!, default);
+    }
+
+    [Fact]
+    public async Task Failed_sound_removal_fails_the_job_and_deletes_folder()
+    {
+        var silent = Hd with { FormatSelector = "18", HasAudio = false, RemoveAudio = true };
+        var job = Start(Request(silent));
+        _temp.FindOutput(job.Id).Returns(new OutputFile(@"C:\Temp\MediaTool\x\media.mp4", 20 * MB));
+        _ffmpeg.RemoveAudioAsync(default!, default).ThrowsAsyncForAnyArgs(new FfmpegException(1, "Invalid data found"));
+
+        await Sut.RunAsync(job.Id, Request(silent), CancellationToken.None);
+
+        var failed = _store.Get(job.Id)!;
+        failed.Status.Should().Be(JobStatus.Failed);
+        failed.Error.Should().Be(MediaError.Unknown);
+        failed.Message.Should().NotContain("Invalid data");
         _temp.Received().DeleteJobFolder(job.Id);
     }
 }

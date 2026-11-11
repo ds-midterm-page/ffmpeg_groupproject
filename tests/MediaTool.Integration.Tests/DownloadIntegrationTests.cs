@@ -46,7 +46,7 @@ public sealed class DownloadIntegrationTests : IDisposable
 
         var store = new JobStore();
         var temp = new TempFileManager(_root);
-        var runner = new DownloadJobRunner(client, temp, store, NullLogger<DownloadJobRunner>.Instance);
+        var runner = new DownloadJobRunner(client, temp, new FfmpegRunner(Options.Create(new FfmpegOptions())), store, NullLogger<DownloadJobRunner>.Instance);
         var request = new DownloadRequest(VideoUrl, metadata.Metadata!.Title, hd);
         var job = store.Create(request);
 
@@ -67,6 +67,33 @@ public sealed class DownloadIntegrationTests : IDisposable
         probe.PrimaryAudioStream.Should().NotBeNull("the 720p stream is merged with audio");
         probe.Format.FormatName.Should().Contain("mp4");
         probe.Duration.TotalSeconds.Should().BeApproximately(213, 2);
+    }
+
+    [SkippableFact]
+    public async Task Downloads_720p_without_sound_when_sound_is_switched_off()
+    {
+        var ytDlp = Tools.FindYtDlp();
+        Skip.If(ytDlp is null, "yt-dlp not found: put it in src/MediaTool.App/tools/ or set MEDIATOOL_YTDLP.");
+        Skip.IfNot(Tools.OnPath("ffprobe") && Tools.OnPath("ffmpeg"), "ffmpeg/ffprobe not on PATH.");
+
+        var client = new YtDlpProcessClient(Options.Create(new YtDlpOptions { ExecutablePath = ytDlp, MetadataTimeout = TimeSpan.FromMinutes(2) }));
+        var metadata = await new MetadataService(client, NullLogger<MetadataService>.Instance).GetMetadataAsync(VideoUrl.AbsoluteUri);
+        metadata.IsSuccess.Should().BeTrue(metadata.Message);
+        var silent = FormatPicker.GetOptions(metadata.Metadata!, includeSound: false).Single(o => o.Label == "720p");
+
+        var store = new JobStore();
+        var runner = new DownloadJobRunner(client, new TempFileManager(_root), new FfmpegRunner(Options.Create(new FfmpegOptions())), store, NullLogger<DownloadJobRunner>.Instance);
+        var request = new DownloadRequest(VideoUrl, metadata.Metadata!.Title, silent);
+        var job = store.Create(request);
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+        await runner.RunAsync(job.Id, request, cts.Token);
+
+        var done = store.Get(job.Id)!;
+        done.Status.Should().Be(JobStatus.Completed, done.Message);
+        var probe = await FFProbe.AnalyseAsync(done.FilePath!);
+        probe.PrimaryVideoStream!.Height.Should().Be(720);
+        probe.PrimaryAudioStream.Should().BeNull();
     }
 }
 

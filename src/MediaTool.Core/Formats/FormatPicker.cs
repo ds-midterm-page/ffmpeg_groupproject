@@ -13,8 +13,16 @@ public static class FormatPicker
     /// <summary>Upper bounds for the short side (height for landscape, width for portrait).</summary>
     public static readonly int[] Presets = [720, 480, 360];
 
-    public static IReadOnlyList<QualityOption> GetOptions(VideoMetadata metadata, long maxBytes = SizeLimit.MaxBytes)
+    public static IReadOnlyList<QualityOption> GetOptions(VideoMetadata metadata, long maxBytes = SizeLimit.MaxBytes) =>
+        GetOptions(metadata, includeSound: true, maxBytes);
+
+    public static IReadOnlyList<QualityOption> GetOptions(VideoMetadata metadata, bool includeSound, long maxBytes = SizeLimit.MaxBytes)
     {
+        if (!includeSound)
+        {
+            throw new NotImplementedException();
+        }
+
         var options = new List<QualityOption>();
         var bestAudio = PickAudio(metadata.Formats);
 
