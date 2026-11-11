@@ -9,8 +9,11 @@ namespace MediaTool.Media;
 /// Runs one download job: refuse if the estimate is over the limit, run yt-dlp into a per-job folder,
 /// then check the real file size. Any failure deletes the job folder and leaves a plain-language message.
 /// </summary>
-public sealed class DownloadJobRunner(IYtDlpClient client, ITempFileManager temp, JobStore store, ILogger<DownloadJobRunner> logger)
+public sealed class DownloadJobRunner(
+    IYtDlpClient client, ITempFileManager temp, IFfmpegRunner ffmpeg, JobStore store, ILogger<DownloadJobRunner> logger)
 {
+    private readonly IFfmpegRunner _ffmpeg = ffmpeg;
+
     public async Task RunAsync(Guid jobId, DownloadRequest request, CancellationToken cancellationToken)
     {
         if (request.Option.ExceedsLimit)
