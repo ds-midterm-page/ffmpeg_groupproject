@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
+using MediaTool.Core.Download;
 using MediaTool.Core.Metadata;
 using MediaTool.Core.Validation;
 using Microsoft.Extensions.Options;
@@ -25,6 +26,9 @@ public sealed class YtDlpProcessClient(IOptions<YtDlpOptions> options) : IYtDlpC
 
         return stdout;
     }
+
+    public Task DownloadAsync(DownloadRequest request, string outputFolder, IProgress<DownloadProgress> progress, CancellationToken cancellationToken) =>
+        throw new NotImplementedException();
 
     internal string ResolveExecutable()
     {

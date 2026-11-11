@@ -1,3 +1,5 @@
+using MediaTool.Core.Download;
+
 namespace MediaTool.Media;
 
 /// <summary>Thin wrapper around the yt-dlp executable so services can be tested without it.</summary>
@@ -8,6 +10,11 @@ public interface IYtDlpClient
     /// <exception cref="YtDlpNotFoundException">yt-dlp could not be started.</exception>
     /// <exception cref="TimeoutException">yt-dlp took too long.</exception>
     Task<string> GetMetadataJsonAsync(Uri url, CancellationToken cancellationToken);
+
+    /// <summary>Downloads the chosen quality into <paramref name="outputFolder"/>.</summary>
+    /// <exception cref="YtDlpException">yt-dlp exited with an error.</exception>
+    /// <exception cref="YtDlpNotFoundException">yt-dlp could not be started.</exception>
+    Task DownloadAsync(DownloadRequest request, string outputFolder, IProgress<DownloadProgress> progress, CancellationToken cancellationToken);
 }
 
 /// <summary>yt-dlp ran but failed. <see cref="StandardError"/> is for the log, never for the user.</summary>
