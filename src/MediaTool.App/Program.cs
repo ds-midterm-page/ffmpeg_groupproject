@@ -1,10 +1,15 @@
 using System.Diagnostics;
 using MediaTool.App.Components;
+using MediaTool.Media;
 
 const string AppUrl = "http://localhost:5080";
 
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseUrls(AppUrl);
+
+builder.Services.Configure<YtDlpOptions>(builder.Configuration.GetSection(YtDlpOptions.SectionName));
+builder.Services.AddSingleton<IYtDlpClient, YtDlpProcessClient>();
+builder.Services.AddSingleton<MetadataService>();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
