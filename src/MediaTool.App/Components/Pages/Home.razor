@@ -1,5 +1,6 @@
 ﻿@page "/"
-@rendermode InteractiveServer
+@* No prerender: otherwise a link pasted before the live connection starts is silently wiped. *@
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @using MediaTool.Core.Metadata
 @using MediaTool.Media
 @inject MetadataService Metadata
