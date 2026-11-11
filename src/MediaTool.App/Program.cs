@@ -11,6 +11,8 @@ builder.WebHost.UseUrls(AppUrl);
 builder.Services.Configure<YtDlpOptions>(builder.Configuration.GetSection(YtDlpOptions.SectionName));
 builder.Services.AddSingleton<IYtDlpClient, YtDlpProcessClient>();
 builder.Services.AddSingleton<MetadataService>();
+builder.Services.Configure<FfmpegOptions>(builder.Configuration.GetSection(FfmpegOptions.SectionName));
+builder.Services.AddSingleton<IFfmpegRunner, FfmpegRunner>();
 builder.Services.AddSingleton<ITempFileManager>(new TempFileManager(TempFileManager.DefaultRoot));
 builder.Services.AddSingleton<JobStore>();
 builder.Services.AddSingleton<JobQueue>();
