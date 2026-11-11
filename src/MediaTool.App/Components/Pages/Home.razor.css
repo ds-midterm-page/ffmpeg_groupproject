@@ -92,3 +92,52 @@ h1 {
     margin: 0;
     color: #3c4043;
 }
+
+.quality {
+    margin-top: 24px;
+}
+
+.quality h3 {
+    margin: 0 0 8px;
+    font-size: 1rem;
+}
+
+.option {
+    display: grid;
+    grid-template-columns: auto 5rem 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    border: 1px solid #dadce0;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.option.selected {
+    border-color: #1a73e8;
+    background: #e8f0fe;
+}
+
+.option.too-large {
+    color: #80868b;
+    cursor: not-allowed;
+}
+
+.option .name {
+    font-weight: 600;
+}
+
+.option .type {
+    color: #5f6368;
+}
+
+.option .size {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.option em {
+    color: #a50e0e;
+    font-style: normal;
+}

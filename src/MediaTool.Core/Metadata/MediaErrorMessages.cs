@@ -16,6 +16,7 @@ public static class MediaErrorMessages
         MediaError.LiveStream => "Live streams can't be downloaded. Try again once the stream has ended.",
         MediaError.Network => "Couldn't reach the site. Check your internet connection and try again.",
         MediaError.ToolMissing => "The downloader component is missing. Please reinstall MediaTool.",
+        MediaError.TooLarge => "This file would be larger than 50 MB. Pick a lower quality or trim the video.",
         MediaError.Unknown => "Something went wrong while reading this video. Please try again later.",
         _ => "Something went wrong. Please try again.",
     };
