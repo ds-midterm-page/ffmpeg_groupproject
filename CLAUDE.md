@@ -49,7 +49,7 @@ tests/
 ## Milestones
 
 1. [x] Setup: solution, projects, test projects, CI workflow, .gitignore
-2. [ ] URL validation (Core) — supported/unsupported/malformed links
+2. [x] URL validation (Core) — supported/unsupported/malformed links
 3. [ ] Metadata + preview — yt-dlp wrapper, parse title/duration/thumbnail/formats from fixtures
 4. [ ] Format picker — resolutions ≤1280 + audio-only, 50 MB size check
 5. [ ] Download job — background queue, progress in UI; integration test: 720p MP4 verified with ffprobe
