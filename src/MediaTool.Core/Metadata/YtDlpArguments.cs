@@ -1,3 +1,6 @@
+using System.Globalization;
+using MediaTool.Core.Download;
+
 namespace MediaTool.Core.Metadata;
 
 /// <summary>Builds yt-dlp argument lists. Never a shell string: each item is passed to the process as-is.</summary>
@@ -33,5 +36,42 @@ public static class YtDlpArguments
         string? mergeExtension,
         string? ffmpegLocation,
         string? cookiesFile,
-        long maxBytes) => throw new NotImplementedException();
+        long maxBytes)
+    {
+        var args = new List<string>
+        {
+            "-f", FormatSelector.EnsureValid(formatSelector),
+            "--no-playlist",
+            "--no-warnings",
+            "--ignore-config",
+            "--no-part",
+            "--no-mtime",
+            "--newline",
+            "--progress-template", "download:" + DownloadProgressParser.Template,
+            "--max-filesize", maxBytes.ToString(CultureInfo.InvariantCulture),
+            "-o", outputTemplate,
+        };
+
+        if (!string.IsNullOrWhiteSpace(mergeExtension))
+        {
+            args.Add("--merge-output-format");
+            args.Add(mergeExtension);
+        }
+
+        if (!string.IsNullOrWhiteSpace(ffmpegLocation))
+        {
+            args.Add("--ffmpeg-location");
+            args.Add(ffmpegLocation);
+        }
+
+        if (!string.IsNullOrWhiteSpace(cookiesFile))
+        {
+            args.Add("--cookies");
+            args.Add(cookiesFile);
+        }
+
+        args.Add("--");
+        args.Add(url.AbsoluteUri);
+        return args;
+    }
 }

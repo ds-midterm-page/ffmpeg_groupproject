@@ -12,4 +12,9 @@ public sealed class YtDlpOptions
     public string? CookiesFile { get; set; }
 
     public TimeSpan MetadataTimeout { get; set; } = TimeSpan.FromSeconds(60);
+
+    public TimeSpan DownloadTimeout { get; set; } = TimeSpan.FromMinutes(30);
+
+    /// <summary>Folder or path of ffmpeg for merging. Empty: tools\ffmpeg.exe next to the app if present, else yt-dlp searches PATH.</summary>
+    public string? FfmpegLocation { get; set; }
 }

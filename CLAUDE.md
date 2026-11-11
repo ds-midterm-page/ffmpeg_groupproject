@@ -52,7 +52,7 @@ tests/
 2. [x] URL validation (Core) — supported/unsupported/malformed links
 3. [x] Metadata + preview — yt-dlp wrapper, parse title/duration/thumbnail/formats from fixtures
 4. [x] Format picker — resolutions ≤1280 + audio-only, 50 MB size check
-5. [ ] Download job — background queue, progress in UI; integration test: 720p MP4 verified with ffprobe
+5. [x] Download job — background queue, progress in UI; integration test: 720p MP4 verified with ffprobe
 6. [ ] Trim timeline — time math tests; ffmpeg trim; ffprobe duration == end − start (±0.1 s)
 7. [ ] Presets — preset → ffmpeg argument builder; reject malformed presets and injection attempts
 8. [ ] Cleanup + polish — temp file cleanup, friendly errors, single-exe publish
