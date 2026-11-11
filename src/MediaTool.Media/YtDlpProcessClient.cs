@@ -58,6 +58,9 @@ public sealed class YtDlpProcessClient(IOptions<YtDlpOptions> options) : IYtDlpC
         // Force yt-dlp to write UTF-8 so non-Latin titles survive on Windows.
         psi.Environment["PYTHONIOENCODING"] = "utf-8";
 
+        // yt-dlp crashes if any PATH folder is unreadable, so hand it only folders that work.
+        psi.Environment["PATH"] = SearchPath.KeepUsable(psi.Environment["PATH"], SearchPath.IsReadableDirectory);
+
         using var process = new Process { StartInfo = psi };
         try
         {
