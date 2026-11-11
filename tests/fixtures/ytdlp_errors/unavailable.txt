@@ -1,0 +1,1 @@
+ERROR: [youtube] abc123: Video unavailable

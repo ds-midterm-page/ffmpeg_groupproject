@@ -1,0 +1,16 @@
+{
+  "id": "7300000000000000000",
+  "title": "dance clip #fyp",
+  "uploader": "someuser",
+  "duration": 15,
+  "webpage_url": "https://www.tiktok.com/@someuser/video/7300000000000000000",
+  "extractor_key": "TikTok",
+  "thumbnails": [
+    { "id": "cover", "url": "https://p16-sign.tiktokcdn.com/cover.jpeg" },
+    { "id": "originCover", "url": "https://p16-sign.tiktokcdn.com/origin.jpeg", "preference": -1 }
+  ],
+  "formats": [
+    { "format_id": "download_addr-0", "ext": "mp4", "vcodec": "h264", "acodec": "aac", "width": 576, "height": 1024, "filesize": 2311000, "protocol": "https" },
+    { "format_id": "h264_540p_1100000-0", "ext": "mp4", "vcodec": "h264", "acodec": "aac", "width": 576, "height": 1024, "tbr": 1100, "protocol": "https" }
+  ]
+}

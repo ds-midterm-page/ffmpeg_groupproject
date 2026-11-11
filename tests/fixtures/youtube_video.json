@@ -1,0 +1,27 @@
+{
+  "id": "dQw4w9WgXcQ",
+  "title": "Sample Music Video (Official)",
+  "uploader": "Sample Channel",
+  "duration": 213.0,
+  "duration_string": "3:33",
+  "is_live": false,
+  "webpage_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  "extractor_key": "Youtube",
+  "thumbnail": "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
+  "thumbnails": [
+    { "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/default.jpg", "width": 120, "height": 90 },
+    { "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg", "width": 1280, "height": 720 }
+  ],
+  "formats": [
+    { "format_id": "sb0", "ext": "mhtml", "format_note": "storyboard", "vcodec": "none", "acodec": "none", "width": 48, "height": 27, "protocol": "mhtml" },
+    { "format_id": "139", "ext": "m4a", "format_note": "low", "vcodec": "none", "acodec": "mp4a.40.5", "abr": 48.8, "tbr": 48.8, "filesize": 1301412, "protocol": "https" },
+    { "format_id": "140", "ext": "m4a", "format_note": "medium", "vcodec": "none", "acodec": "mp4a.40.2", "abr": 129.5, "tbr": 129.5, "filesize": 3449826, "protocol": "https" },
+    { "format_id": "251", "ext": "webm", "format_note": "medium", "vcodec": "none", "acodec": "opus", "abr": 135.1, "tbr": 135.1, "filesize_approx": 3600000, "protocol": "https" },
+    { "format_id": "18", "ext": "mp4", "format_note": "360p", "vcodec": "avc1.42001E", "acodec": "mp4a.40.2", "width": 640, "height": 360, "fps": 25, "tbr": 503.2, "filesize": 13400000, "protocol": "https" },
+    { "format_id": "134", "ext": "mp4", "format_note": "360p", "vcodec": "avc1.4d401e", "acodec": "none", "width": 640, "height": 360, "fps": 25, "tbr": 287.0, "filesize": 7650000, "protocol": "https" },
+    { "format_id": "135", "ext": "mp4", "format_note": "480p", "vcodec": "avc1.4d401f", "acodec": "none", "width": 854, "height": 480, "fps": 25, "tbr": 512.4, "filesize": 13650000, "protocol": "https" },
+    { "format_id": "136", "ext": "mp4", "format_note": "720p", "vcodec": "avc1.4d401f", "acodec": "none", "width": 1280, "height": 720, "fps": 25, "tbr": 1004.6, "filesize": 26750000, "protocol": "https" },
+    { "format_id": "137", "ext": "mp4", "format_note": "1080p", "vcodec": "avc1.640028", "acodec": "none", "width": 1920, "height": 1080, "fps": 25, "tbr": 2210.0, "protocol": "https" },
+    { "format_id": "313", "ext": "webm", "format_note": "2160p", "vcodec": "vp9", "acodec": "none", "width": 3840, "height": 2160, "fps": 25, "tbr": 12000.0, "filesize_approx": 319500000, "protocol": "https" }
+  ]
+}
