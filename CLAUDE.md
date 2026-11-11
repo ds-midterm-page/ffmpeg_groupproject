@@ -32,6 +32,11 @@ tests/
 - All tests: `dotnet test`
 - Run: `dotnet run --project src/MediaTool.App`
 - Publish single exe: `dotnet publish src/MediaTool.App -c Release -r win-x64 --self-contained -p:PublishSingleFile=true`
+- Docker app (Linux, yt-dlp + ffmpeg included): `docker compose -f compose.mediatool.yml up --build` → http://localhost:5080
+- Docker tests (all, incl. real downloads): `docker build --target test -t mediatool-test .` then `docker run --rm mediatool-test`
+- `docker-compose.yml` is the separate Python backend + JS frontend; MediaTool uses `compose.mediatool.yml`.
+- Local Windows runs need `src/MediaTool.App/tools/yt-dlp.exe` (not committed) or yt-dlp on PATH.
+- Tests must pass on Windows and Linux: build test paths with `Path.Combine`/`Path.GetTempPath()`, never hard-code `C:\`.
 
 ## Rules
 
