@@ -1,12 +1,13 @@
 using System.Diagnostics;
 using MediaTool.App;
 using MediaTool.App.Components;
+using MediaTool.Core.Hosting;
 using MediaTool.Media;
 
-const string AppUrl = "http://localhost:5080";
-
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.UseUrls(AppUrl);
+
+// Desktop: localhost only. Docker sets ASPNETCORE_URLS=http://+:5080 so the port can be published.
+builder.WebHost.UseUrls(HostingSettings.ResolveUrls(builder.Configuration["urls"]));
 
 builder.Services.Configure<YtDlpOptions>(builder.Configuration.GetSection(YtDlpOptions.SectionName));
 builder.Services.AddSingleton<IYtDlpClient, YtDlpProcessClient>();
@@ -37,13 +38,16 @@ app.MapFileEndpoints();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-// Open the user's browser once the server is listening (skipped under `dotnet run`, which uses launchSettings).
-if (Environment.GetEnvironmentVariable("MEDIATOOL_NO_BROWSER") is null && !app.Environment.IsDevelopment())
+// Open the user's browser once the server is listening (desktop exe only).
+if (HostingSettings.ShouldOpenBrowser(
+        app.Environment.IsDevelopment(),
+        Environment.GetEnvironmentVariable("MEDIATOOL_NO_BROWSER"),
+        Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER")))
 {
     app.Lifetime.ApplicationStarted.Register(() =>
     {
-        try { Process.Start(new ProcessStartInfo(AppUrl) { UseShellExecute = true }); }
-        catch (Exception ex) { app.Logger.LogWarning(ex, "Could not open browser at {Url}", AppUrl); }
+        try { Process.Start(new ProcessStartInfo(HostingSettings.DefaultUrl) { UseShellExecute = true }); }
+        catch (Exception ex) { app.Logger.LogWarning(ex, "Could not open browser at {Url}", HostingSettings.DefaultUrl); }
     });
 }
 
