@@ -1,6 +1,7 @@
 ﻿@page "/"
 @* No prerender: otherwise a link pasted before the live connection starts is silently wiped. *@
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
+@using MediaTool.Core.Formats
 @using MediaTool.Core.Metadata
 @using MediaTool.Media
 @inject MetadataService Metadata
@@ -39,9 +40,41 @@
                 }
                 <p class="meta">
                     <span>Length: @DurationFormatter.Format(video.Duration)</span>
-                    <span>@video.Formats.Count formats available</span>
                 </p>
             </div>
+        </section>
+
+        <section class="quality">
+            <h3>Quality</h3>
+            @if (_options.Count == 0)
+            {
+                <p class="error" role="alert">No downloadable quality was found for this video.</p>
+            }
+            else
+            {
+                <div role="radiogroup" aria-label="Quality">
+                    @foreach (var option in _options)
+                    {
+                        <label class="option @(option.ExceedsLimit ? "too-large" : null) @(option == _selected ? "selected" : null)">
+                            <input type="radio" name="quality" checked="@(option == _selected)" disabled="@option.ExceedsLimit"
+                                   @onchange="() => _selected = option" />
+                            <span class="name">@option.Label</span>
+                            <span class="type">@option.Extension.ToUpperInvariant()@(option.Kind == QualityKind.Video && !option.HasAudio ? " · no sound" : null)</span>
+                            <span class="size">
+                                @(option.IsSizeEstimated && option.EstimatedBytes is not null ? "about " : null)@SizeFormatter.Format(option.EstimatedBytes)
+                                @if (option.ExceedsLimit)
+                                {
+                                    <em> · over 50 MB</em>
+                                }
+                            </span>
+                        </label>
+                    }
+                </div>
+                @if (_selected is null)
+                {
+                    <p class="error" role="alert">@MediaErrorMessages.For(MediaError.TooLarge)</p>
+                }
+            }
         </section>
     }
 </main>
@@ -51,6 +84,8 @@
     private string? _link;
     private bool _loading;
     private MetadataResult? _result;
+    private IReadOnlyList<QualityOption> _options = [];
+    private QualityOption? _selected;
 
     private async Task LoadPreviewAsync()
     {
@@ -63,7 +98,14 @@
         _result = null;
         try
         {
+            _options = [];
+            _selected = null;
             _result = await Metadata.GetMetadataAsync(_link, _disposed.Token);
+            if (_result.Metadata is { } metadata)
+            {
+                _options = FormatPicker.GetOptions(metadata);
+                _selected = _options.FirstOrDefault(o => !o.ExceedsLimit);
+            }
         }
         catch (OperationCanceledException)
         {
