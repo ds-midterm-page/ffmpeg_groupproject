@@ -1,0 +1,19 @@
+# MediaTool (.NET) app. Separate from docker-compose.yml (Python backend + JS frontend).
+#   docker compose -f compose.mediatool.yml up --build
+#   then open http://localhost:5080
+services:
+  mediatool:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: final
+    image: mediatool:local
+    ports:
+      # Only this computer can reach it, like the desktop app.
+      - "127.0.0.1:5080:5080"
+    # Downloads are temporary and cleaned up; keep them in memory-backed /tmp, not in the image.
+    # "exec" is required: the yt-dlp Linux binary unpacks itself into /tmp and runs from there
+    # (Docker mounts tmpfs as noexec by default, which makes yt-dlp fail with "failed to map segment").
+    tmpfs:
+      - /tmp:size=512m,mode=1777,exec
+    restart: unless-stopped
