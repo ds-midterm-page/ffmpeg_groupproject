@@ -5,8 +5,10 @@ namespace MediaTool.Core.Tests.Download;
 
 public class FfmpegArgumentsTests
 {
-    private const string Input = @"C:\Temp\MediaTool\job\media.mp4";
-    private const string Output = @"C:\Temp\MediaTool\job\silent.mp4";
+    // Built from the OS temp folder so the paths are fully qualified on Windows and Linux alike.
+    private static readonly string Job = Path.Combine(Path.GetTempPath(), "MediaTool", "job");
+    private static readonly string Input = Path.Combine(Job, "media.mp4");
+    private static readonly string Output = Path.Combine(Job, "silent.mp4");
 
     [Fact]
     public void Remove_audio_copies_video_streams_only()
@@ -29,16 +31,21 @@ public class FfmpegArgumentsTests
     [Fact]
     public void Paths_are_passed_as_single_arguments()
     {
-        var withSpaces = @"C:\Temp\My Folder\media; rm.mp4";
+        var withSpaces = Path.Combine(Path.GetTempPath(), "My Folder", "media; rm.mp4");
 
         FfmpegArguments.RemoveAudio(withSpaces, Output).Should().Contain(withSpaces);
     }
 
+    public static TheoryData<string, string> NotFullPaths => new()
+    {
+        { "media.mp4", Output },
+        { Input, "silent.mp4" },
+        { "-i", Output },
+        { Input, "" },
+    };
+
     [Theory]
-    [InlineData("media.mp4", Output)]
-    [InlineData(Input, "silent.mp4")]
-    [InlineData("-i", Output)]
-    [InlineData(Input, "")]
+    [MemberData(nameof(NotFullPaths))]
     public void Requires_full_paths(string input, string output)
     {
         var act = () => FfmpegArguments.RemoveAudio(input, output);
