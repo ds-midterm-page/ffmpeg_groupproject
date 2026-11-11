@@ -1,0 +1,35 @@
+Project Goal: What is the business value of your project and objectives your team needed to achieve? 
+
+To eliminate technical barriers for non-tech-savvy users by providing a simple, all-in-one web application for downloading, trimming, and editing social media content - without needing to touch a command-line interface or learn complex software or visit sites full of adware. Business and user value is achieved with an intuitive "paste-and-click" workflow that handles compression, resolution conversion and preset sizing
+
+
+User Story	Description
+I want to paste a link from any supported website so that I can start editing without manually downloading and re uploading files	 user pastes a URL into an input field. The backend fetches the media and shows a preview with metadata (title, duration, resolution)
+I want to choose the quality and format of the source before downloading so that i can avoid wasting time	available resolutions, formats and audio only options are listed per link, and the user picks one before the download starts
+I want to trim a video with a visual timeline so that I can keep only the part I need	timeline with start/end handles, frame accurate preview and a display of the trimmed length
+
+
+Role and assigned tasks
+Managing ffmpeg api, creating presets
+Managing telegram stickers editing/downloading
+Managing getting media from list of supported websites, selecting extension and resolution of the media
+
+
+
+Provide a brief description of each team’s member approach to test the assigned tasks success (test driven approach).
+
+1. ffmpeg api and presets - write tests first for a command builder that turns a preset ("Instagram Reel") into ffmpeg arguments. Run the result on a sample clip and check it. Add tests that reject malformed presets and injection attempts.
+2. telegram stickers - write validators for Telegram's format rules (512x512px,webm under 3s, 512kb). Test converting images and videos to those specs, and downloading a full pack by link.
+3. supported sites, extension and resolution - wrap yt-dlp and test url validation, format list parsing, and real downloads of stable test links in a chosen format (720p MP4). Test private, removed and unsupported links.
+
+
+b.	What are the specific objectives of your features and how do you plan to test them? Describe the methods of testing and expected results of your tests
+
+reliably turn a supported link into a preview with correct metadata. let the user download exactly the chosen quality and format. produce an accurate trim, with the UI showing the true result length.
+Feature	Test method	Expected result
+Link and preview	Unit tests and mocked yt-dlp output	correct metadata and clear errors for bad links
+Quality and format	Download a sample, check with ffprobe	Resolution and extension match the choice
+Trim timeline	Unit tests for time logic, ffprobe duration check	Duration equals end minus start 
+
+we will try to use docker together with docker compose. For the backend, the dockerfile starts from a slim base image, installs ffmpeg and yt-dlp, copies the code, installs dependencies, and runs the API server as a non root user. For the frontend, a second dockerfile builds the web app and serves it through a lightweight web server such as nginx. The docker-compose.yml file ties everything together by defining the frontend, the backend, and a job queue (for example redis) with a worker, all sharing a temporary volume for media files and receiving their settings through environment variables. Each container has CPU and memory limits so heavy jobs cannot starve the other services. The CI pipeline runs the test suite inside the same image, so tests run in the same environment as production.
+the whole application should start with a single command (or GUI) on any machine, with no manual installation of ffmpeg or yt-dlp. Once running, the web app opens in the browser and the full flow works: pasting a link, choosing a format, and trimming the clip. The tests pass inside the container exactly as they do in CI, temporary files are removed automatically, and heavy jobs run in the queue without blocking the rest of the application. Alternatively we can also deploy it ready to use a site without installing and additional resources.
