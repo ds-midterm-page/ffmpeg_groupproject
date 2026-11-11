@@ -1,7 +1,82 @@
 ﻿@page "/"
+@rendermode InteractiveServer
+@using MediaTool.Core.Metadata
+@using MediaTool.Media
+@inject MetadataService Metadata
+@implements IDisposable
 
-<PageTitle>Home</PageTitle>
+<PageTitle>MediaTool</PageTitle>
 
-<h1>Hello, world!</h1>
+<main class="page">
+    <h1>MediaTool</h1>
+    <p class="hint">Paste a link from YouTube, TikTok, Instagram or X.</p>
 
-Welcome to your new app.
+    <form class="paste" @onsubmit="LoadPreviewAsync">
+        <input type="text" @bind="_link" @bind:event="oninput" placeholder="https://www.youtube.com/watch?v=…"
+               aria-label="Video link" autocomplete="off" spellcheck="false" disabled="@_loading" />
+        <button type="submit" disabled="@(_loading || string.IsNullOrWhiteSpace(_link))">
+            @(_loading ? "Loading…" : "Preview")
+        </button>
+    </form>
+
+    @if (_result is { IsSuccess: false } failed)
+    {
+        <p class="error" role="alert">@failed.Message</p>
+    }
+    else if (_result?.Metadata is { } video)
+    {
+        <section class="preview">
+            @if (video.ThumbnailUrl is not null)
+            {
+                <img src="@video.ThumbnailUrl" alt="" referrerpolicy="no-referrer" />
+            }
+            <div class="details">
+                <h2>@video.Title</h2>
+                @if (video.Uploader is not null)
+                {
+                    <p class="uploader">@video.Uploader</p>
+                }
+                <p class="meta">
+                    <span>Length: @DurationFormatter.Format(video.Duration)</span>
+                    <span>@video.Formats.Count formats available</span>
+                </p>
+            </div>
+        </section>
+    }
+</main>
+
+@code {
+    private readonly CancellationTokenSource _disposed = new();
+    private string? _link;
+    private bool _loading;
+    private MetadataResult? _result;
+
+    private async Task LoadPreviewAsync()
+    {
+        if (_loading)
+        {
+            return;
+        }
+
+        _loading = true;
+        _result = null;
+        try
+        {
+            _result = await Metadata.GetMetadataAsync(_link, _disposed.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            // page closed while loading
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    public void Dispose()
+    {
+        _disposed.Cancel();
+        _disposed.Dispose();
+    }
+}
