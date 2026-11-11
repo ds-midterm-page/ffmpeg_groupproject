@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using MediaTool.App;
 using MediaTool.App.Components;
 using MediaTool.Media;
 
@@ -10,6 +11,11 @@ builder.WebHost.UseUrls(AppUrl);
 builder.Services.Configure<YtDlpOptions>(builder.Configuration.GetSection(YtDlpOptions.SectionName));
 builder.Services.AddSingleton<IYtDlpClient, YtDlpProcessClient>();
 builder.Services.AddSingleton<MetadataService>();
+builder.Services.AddSingleton<ITempFileManager>(new TempFileManager(TempFileManager.DefaultRoot));
+builder.Services.AddSingleton<JobStore>();
+builder.Services.AddSingleton<JobQueue>();
+builder.Services.AddSingleton<DownloadJobRunner>();
+builder.Services.AddHostedService<DownloadWorker>();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
@@ -25,6 +31,7 @@ app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages:
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+app.MapFileEndpoints();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

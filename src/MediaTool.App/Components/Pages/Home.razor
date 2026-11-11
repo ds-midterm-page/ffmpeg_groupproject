@@ -1,10 +1,13 @@
 ﻿@page "/"
 @* No prerender: otherwise a link pasted before the live connection starts is silently wiped. *@
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
+@using System.Globalization
+@using MediaTool.Core.Download
 @using MediaTool.Core.Formats
 @using MediaTool.Core.Metadata
 @using MediaTool.Media
 @inject MetadataService Metadata
+@inject JobQueue Jobs
 @implements IDisposable
 
 <PageTitle>MediaTool</PageTitle>
@@ -76,6 +79,44 @@
                 }
             }
         </section>
+
+        @if (_selected is not null)
+        {
+            <section class="download">
+                @if (_job is null || _job.IsFinished)
+                {
+                    <button type="button" class="primary" @onclick="() => StartDownloadAsync(video)">
+                        Download @_selected.Label
+                    </button>
+                }
+
+                @if (_job is { } job)
+                {
+                    @switch (job.Status)
+                    {
+                        case JobStatus.Queued:
+                            <p class="status">Waiting to start…</p>
+                            break;
+                        case JobStatus.Downloading:
+                            <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@((int)(job.Percent ?? 0))">
+                                <div class="bar" style="width: @(((int)(job.Percent ?? 0)).ToString(CultureInfo.InvariantCulture))%"></div>
+                            </div>
+                            <p class="status">Downloading… @(job.Percent is { } p ? $"{(int)p}%" : null)</p>
+                            break;
+                        case JobStatus.Completed when job.FilePath is not null:
+                            <p class="status done">Ready (@SizeFormatter.Format(job.FileSizeBytes)).</p>
+                            <a class="save" href="files/@job.Id" download="@job.DownloadName">Save @job.DownloadName</a>
+                            break;
+                        case JobStatus.Completed:
+                            <p class="status done">Saved. Check your Downloads folder.</p>
+                            break;
+                        default:
+                            <p class="error" role="alert">@job.Message</p>
+                            break;
+                    }
+                }
+            </section>
+        }
     }
 </main>
 
@@ -86,6 +127,35 @@
     private MetadataResult? _result;
     private IReadOnlyList<QualityOption> _options = [];
     private QualityOption? _selected;
+    private JobSnapshot? _job;
+
+    protected override void OnInitialized() => Jobs.Store.Changed += OnJobChanged;
+
+    private async Task StartDownloadAsync(VideoMetadata video)
+    {
+        if (_selected is null || _job is { IsFinished: false })
+        {
+            return;
+        }
+
+        var url = video.WebpageUrl ?? new Uri(_link!.Contains("://", StringComparison.Ordinal) ? _link.Trim() : "https://" + _link.Trim());
+        var id = await Jobs.EnqueueAsync(new DownloadRequest(url, video.Title, _selected), _disposed.Token);
+        _job = Jobs.Store.Get(id);
+    }
+
+    private void OnJobChanged(JobSnapshot snapshot)
+    {
+        if (_job?.Id != snapshot.Id)
+        {
+            return;
+        }
+
+        _ = InvokeAsync(() =>
+        {
+            _job = snapshot;
+            StateHasChanged();
+        });
+    }
 
     private async Task LoadPreviewAsync()
     {
@@ -100,6 +170,7 @@
         {
             _options = [];
             _selected = null;
+            _job = null;
             _result = await Metadata.GetMetadataAsync(_link, _disposed.Token);
             if (_result.Metadata is { } metadata)
             {
@@ -119,6 +190,7 @@
 
     public void Dispose()
     {
+        Jobs.Store.Changed -= OnJobChanged;
         _disposed.Cancel();
         _disposed.Dispose();
     }

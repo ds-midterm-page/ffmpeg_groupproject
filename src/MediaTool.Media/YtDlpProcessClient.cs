@@ -15,10 +15,8 @@ public sealed class YtDlpProcessClient(IOptions<YtDlpOptions> options) : IYtDlpC
 
     public async Task<string> GetMetadataJsonAsync(Uri url, CancellationToken cancellationToken)
     {
-        var platform = UrlValidator.Validate(url.AbsoluteUri).Platform;
-        var cookies = platform is Platform.Instagram or Platform.X && File.Exists(_options.CookiesFile) ? _options.CookiesFile : null;
-
-        var (exitCode, stdout, stderr) = await RunAsync(YtDlpArguments.ForMetadata(url, cookies), _options.MetadataTimeout, cancellationToken);
+        var args = YtDlpArguments.ForMetadata(url, CookiesFor(url));
+        var (exitCode, stdout, stderr) = await RunAsync(args, _options.MetadataTimeout, onLine: null, cancellationToken);
         if (exitCode != 0)
         {
             throw new YtDlpException(exitCode, stderr);
@@ -27,8 +25,33 @@ public sealed class YtDlpProcessClient(IOptions<YtDlpOptions> options) : IYtDlpC
         return stdout;
     }
 
-    public Task DownloadAsync(DownloadRequest request, string outputFolder, IProgress<DownloadProgress> progress, CancellationToken cancellationToken) =>
-        throw new NotImplementedException();
+    public async Task DownloadAsync(DownloadRequest request, string outputFolder, IProgress<DownloadProgress> progress, CancellationToken cancellationToken)
+    {
+        var option = request.Option;
+        var isMerge = option.FormatSelector.Contains('+', StringComparison.Ordinal);
+        var args = YtDlpArguments.ForDownload(
+            request.Url,
+            option.FormatSelector,
+            outputTemplate: Path.Combine(outputFolder, TempFileManager.OutputBaseName + ".%(ext)s"),
+            mergeExtension: isMerge ? option.Extension : null,
+            ffmpegLocation: ResolveFfmpeg(),
+            cookiesFile: CookiesFor(request.Url),
+            maxBytes: Core.Formats.SizeLimit.MaxBytes);
+
+        void OnLine(string line)
+        {
+            if (DownloadProgressParser.TryParse(line, out var p))
+            {
+                progress.Report(p);
+            }
+        }
+
+        var (exitCode, _, stderr) = await RunAsync(args, _options.DownloadTimeout, OnLine, cancellationToken);
+        if (exitCode != 0)
+        {
+            throw new YtDlpException(exitCode, stderr);
+        }
+    }
 
     internal string ResolveExecutable()
     {
@@ -37,12 +60,32 @@ public sealed class YtDlpProcessClient(IOptions<YtDlpOptions> options) : IYtDlpC
             return _options.ExecutablePath;
         }
 
-        var bundled = Path.Combine(AppContext.BaseDirectory, "tools", OperatingSystem.IsWindows() ? "yt-dlp.exe" : "yt-dlp");
+        var bundled = BundledTool("yt-dlp");
         return File.Exists(bundled) ? bundled : "yt-dlp";
     }
 
+    private string? ResolveFfmpeg()
+    {
+        if (!string.IsNullOrWhiteSpace(_options.FfmpegLocation))
+        {
+            return _options.FfmpegLocation;
+        }
+
+        var bundled = BundledTool("ffmpeg");
+        return File.Exists(bundled) ? bundled : null;
+    }
+
+    private static string BundledTool(string name) =>
+        Path.Combine(AppContext.BaseDirectory, "tools", OperatingSystem.IsWindows() ? name + ".exe" : name);
+
+    private string? CookiesFor(Uri url)
+    {
+        var platform = UrlValidator.Validate(url.AbsoluteUri).Platform;
+        return platform is Platform.Instagram or Platform.X && File.Exists(_options.CookiesFile) ? _options.CookiesFile : null;
+    }
+
     private async Task<(int ExitCode, string StdOut, string StdErr)> RunAsync(
-        IReadOnlyList<string> arguments, TimeSpan timeout, CancellationToken cancellationToken)
+        IReadOnlyList<string> arguments, TimeSpan timeout, Action<string>? onLine, CancellationToken cancellationToken)
     {
         var exe = ResolveExecutable();
         var psi = new ProcessStartInfo(exe)
@@ -78,7 +121,9 @@ public sealed class YtDlpProcessClient(IOptions<YtDlpOptions> options) : IYtDlpC
         using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeoutCts.CancelAfter(timeout);
 
-        var stdoutTask = process.StandardOutput.ReadToEndAsync(timeoutCts.Token);
+        var stdoutTask = onLine is null
+            ? process.StandardOutput.ReadToEndAsync(timeoutCts.Token)
+            : ReadLinesAsync(process.StandardOutput, onLine, timeoutCts.Token);
         var stderrTask = process.StandardError.ReadToEndAsync(timeoutCts.Token);
         try
         {
@@ -99,5 +144,17 @@ public sealed class YtDlpProcessClient(IOptions<YtDlpOptions> options) : IYtDlpC
             cancellationToken.ThrowIfCancellationRequested();
             throw new TimeoutException($"yt-dlp did not finish within {timeout}.");
         }
+    }
+
+    private static async Task<string> ReadLinesAsync(StreamReader reader, Action<string> onLine, CancellationToken cancellationToken)
+    {
+        var all = new StringBuilder();
+        while (await reader.ReadLineAsync(cancellationToken) is { } line)
+        {
+            all.AppendLine(line);
+            onLine(line);
+        }
+
+        return all.ToString();
     }
 }
