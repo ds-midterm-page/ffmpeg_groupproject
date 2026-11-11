@@ -14,5 +14,6 @@ public enum MediaError
     LiveStream,
     Network,
     ToolMissing,
+    TooLarge,
     Unknown,
 }
