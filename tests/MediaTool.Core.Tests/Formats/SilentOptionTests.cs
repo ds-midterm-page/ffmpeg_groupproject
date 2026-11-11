@@ -46,7 +46,8 @@ public class SilentOptionTests
     {
         var option = Silent(TikTok).Single();
 
-        option.FormatSelector.Should().Be("download_addr-0");
+        // Both TikTok streams carry sound; the higher-bitrate one wins, same rule as with sound.
+        option.FormatSelector.Should().Be("h264_540p_1100000-0");
         option.HasAudio.Should().BeFalse();
         option.RemoveAudio.Should().BeTrue();
         option.IsSizeEstimated.Should().BeTrue("removing sound makes it a bit smaller than the listed size");

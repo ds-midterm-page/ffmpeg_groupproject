@@ -48,7 +48,14 @@
         </section>
 
         <section class="quality">
-            <h3>Quality</h3>
+            <div class="quality-head">
+                <h3>Quality</h3>
+                <label class="sound">
+                    <input type="checkbox" checked="@_includeSound" disabled="@(_job is { IsFinished: false })"
+                           @onchange="e => SetIncludeSound(video, e.Value is true)" />
+                    Include sound
+                </label>
+            </div>
             @if (_options.Count == 0)
             {
                 <p class="error" role="alert">No downloadable quality was found for this video.</p>
@@ -86,7 +93,7 @@
                 @if (_job is null || _job.IsFinished)
                 {
                     <button type="button" class="primary" @onclick="() => StartDownloadAsync(video)">
-                        Download @_selected.Label
+                        Download @_selected.Label@(_selected.Kind == QualityKind.Video && !_selected.HasAudio ? " (no sound)" : null)
                     </button>
                 }
 
@@ -128,6 +135,16 @@
     private IReadOnlyList<QualityOption> _options = [];
     private QualityOption? _selected;
     private JobSnapshot? _job;
+    private bool _includeSound = true;
+
+    private void SetIncludeSound(VideoMetadata video, bool include)
+    {
+        _includeSound = include;
+        var previousLabel = _selected?.Label;
+        _options = FormatPicker.GetOptions(video, _includeSound);
+        _selected = _options.FirstOrDefault(o => o.Label == previousLabel && !o.ExceedsLimit)
+            ?? _options.FirstOrDefault(o => !o.ExceedsLimit);
+    }
 
     protected override void OnInitialized() => Jobs.Store.Changed += OnJobChanged;
 
@@ -174,7 +191,7 @@
             _result = await Metadata.GetMetadataAsync(_link, _disposed.Token);
             if (_result.Metadata is { } metadata)
             {
-                _options = FormatPicker.GetOptions(metadata);
+                _options = FormatPicker.GetOptions(metadata, _includeSound);
                 _selected = _options.FirstOrDefault(o => !o.ExceedsLimit);
             }
         }

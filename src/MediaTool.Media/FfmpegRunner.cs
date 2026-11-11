@@ -1,3 +1,7 @@
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Text;
+using MediaTool.Core.Download;
 using Microsoft.Extensions.Options;
 
 namespace MediaTool.Media;
@@ -30,9 +34,96 @@ public sealed class FfmpegException(int exitCode, string standardError)
     public string StandardError { get; } = standardError;
 }
 
+/// <summary>Runs the real ffmpeg. Arguments go through <see cref="ProcessStartInfo.ArgumentList"/>, never a shell.</summary>
 public sealed class FfmpegRunner(IOptions<FfmpegOptions> options) : IFfmpegRunner
 {
     private readonly FfmpegOptions _options = options.Value;
 
-    public Task RemoveAudioAsync(string path, CancellationToken cancellationToken) => throw new NotImplementedException();
+    public async Task RemoveAudioAsync(string path, CancellationToken cancellationToken)
+    {
+        var full = Path.GetFullPath(path);
+        var temp = Path.Combine(Path.GetDirectoryName(full)!, "silent-" + Guid.NewGuid().ToString("N") + Path.GetExtension(full));
+        try
+        {
+            await RunAsync(FfmpegArguments.RemoveAudio(full, temp), cancellationToken);
+            File.Move(temp, full, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(temp))
+            {
+                File.Delete(temp);
+            }
+        }
+    }
+
+    private string ResolveExecutable()
+    {
+        if (!string.IsNullOrWhiteSpace(_options.ExecutablePath))
+        {
+            return _options.ExecutablePath;
+        }
+
+        var bundled = Path.Combine(AppContext.BaseDirectory, "tools", OperatingSystem.IsWindows() ? "ffmpeg.exe" : "ffmpeg");
+        return File.Exists(bundled) ? bundled : "ffmpeg";
+    }
+
+    private async Task RunAsync(IReadOnlyList<string> arguments, CancellationToken cancellationToken)
+    {
+        var exe = ResolveExecutable();
+        var psi = new ProcessStartInfo(exe)
+        {
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            StandardErrorEncoding = Encoding.UTF8,
+        };
+        foreach (var arg in arguments)
+        {
+            psi.ArgumentList.Add(arg);
+        }
+
+        psi.Environment["PATH"] = SearchPath.KeepUsable(psi.Environment["PATH"], SearchPath.IsReadableDirectory);
+
+        using var process = new Process { StartInfo = psi };
+        try
+        {
+            process.Start();
+        }
+        catch (Win32Exception ex)
+        {
+            throw new FfmpegException(-1, $"ffmpeg could not be started from '{exe}': {ex.Message}");
+        }
+
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeoutCts.CancelAfter(_options.Timeout);
+
+        var stdoutTask = process.StandardOutput.ReadToEndAsync(timeoutCts.Token);
+        var stderrTask = process.StandardError.ReadToEndAsync(timeoutCts.Token);
+        try
+        {
+            await process.WaitForExitAsync(timeoutCts.Token);
+            await stdoutTask;
+            var stderr = await stderrTask;
+            if (process.ExitCode != 0)
+            {
+                throw new FfmpegException(process.ExitCode, stderr);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            try
+            {
+                process.Kill(entireProcessTree: true);
+            }
+            catch (InvalidOperationException)
+            {
+                // already exited
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+            throw new TimeoutException($"ffmpeg did not finish within {_options.Timeout}.");
+        }
+    }
 }

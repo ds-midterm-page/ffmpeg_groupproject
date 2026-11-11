@@ -16,13 +16,12 @@ public static class FormatPicker
     public static IReadOnlyList<QualityOption> GetOptions(VideoMetadata metadata, long maxBytes = SizeLimit.MaxBytes) =>
         GetOptions(metadata, includeSound: true, maxBytes);
 
+    /// <param name="includeSound">
+    /// False: picture only. Video-only streams are preferred; a stream that has sound baked in is marked
+    /// <see cref="QualityOption.RemoveAudio"/> so ffmpeg strips it after download. No "Audio only" choice.
+    /// </param>
     public static IReadOnlyList<QualityOption> GetOptions(VideoMetadata metadata, bool includeSound, long maxBytes = SizeLimit.MaxBytes)
     {
-        if (!includeSound)
-        {
-            throw new NotImplementedException();
-        }
-
         var options = new List<QualityOption>();
         var bestAudio = PickAudio(metadata.Formats);
 
@@ -39,13 +38,20 @@ public static class FormatPicker
             }
 
             var bestShort = fitting.Max(ShortSide);
-            var chosen = fitting
-                .Where(f => ShortSide(f) == bestShort)
-                .Select(f => BuildVideoOption(f, f.HasAudio ? null : bestAudio, maxBytes))
-                .OrderByDescending(c => c.Bitrate)
-                .ThenBy(c => c.Option.EstimatedBytes ?? long.MaxValue)
-                .First()
-                .Option;
+            var sameSize = fitting.Where(f => ShortSide(f) == bestShort);
+            var chosen = includeSound
+                ? sameSize
+                    .Select(f => BuildVideoOption(f, f.HasAudio ? null : bestAudio, maxBytes))
+                    .OrderByDescending(c => c.Bitrate)
+                    .ThenBy(c => c.Option.EstimatedBytes ?? long.MaxValue)
+                    .First()
+                    .Option
+                : BuildSilentOption(
+                    sameSize
+                        .OrderBy(f => f.HasAudio) // video-only first: nothing to strip
+                        .ThenByDescending(f => f.BitrateKbps ?? 0)
+                        .First(),
+                    maxBytes);
 
             if (options.All(o => o.FormatSelector != chosen.FormatSelector))
             {
@@ -53,7 +59,7 @@ public static class FormatPicker
             }
         }
 
-        if (bestAudio is not null)
+        if (includeSound && bestAudio is not null)
         {
             options.Add(new QualityOption(
                 Label: "Audio only",
@@ -93,6 +99,20 @@ public static class FormatPicker
 
         return (option, bitrate);
     }
+
+    private static QualityOption BuildSilentOption(MediaFormat video, long maxBytes) => new(
+        Label: $"{ShortSide(video)}p",
+        Kind: QualityKind.Video,
+        FormatSelector: video.FormatId,
+        Extension: video.Extension,
+        Width: video.Width,
+        Height: video.Height,
+        HasAudio: false,
+        EstimatedBytes: video.FileSizeBytes,
+        // Stripping sound shrinks the file, so the listed size is only an upper estimate.
+        IsSizeEstimated: video.IsSizeEstimated || video.HasAudio,
+        ExceedsLimit: video.FileSizeBytes is { } s && SizeLimit.IsTooLarge(s, maxBytes),
+        RemoveAudio: video.HasAudio);
 
     /// <summary>m4a first (plays everywhere and merges into mp4), then highest bitrate.</summary>
     private static MediaFormat? PickAudio(IEnumerable<MediaFormat> formats) =>

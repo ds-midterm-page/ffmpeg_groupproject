@@ -7,7 +7,7 @@ namespace MediaTool.Media;
 
 /// <summary>
 /// Runs one download job: refuse if the estimate is over the limit, run yt-dlp into a per-job folder,
-/// then check the real file size. Any failure deletes the job folder and leaves a plain-language message.
+/// strip the sound if the user switched it off, then check the real file size. Any failure deletes the job folder and leaves a plain-language message.
 /// </summary>
 public sealed class DownloadJobRunner(
     IYtDlpClient client, ITempFileManager temp, IFfmpegRunner ffmpeg, JobStore store, ILogger<DownloadJobRunner> logger)
@@ -38,6 +38,18 @@ public sealed class DownloadJobRunner(
                 logger.LogWarning("Job {JobId}: yt-dlp produced no file (skipped by max-filesize?)", jobId);
                 Fail(jobId, MediaError.TooLarge, deleteFolder: true);
                 return;
+            }
+
+            if (request.Option.RemoveAudio)
+            {
+                await _ffmpeg.RemoveAudioAsync(output.Path, cancellationToken);
+                output = temp.FindOutput(jobId);
+                if (output is null)
+                {
+                    logger.LogError("Job {JobId}: file missing after removing sound", jobId);
+                    Fail(jobId, MediaError.Unknown, deleteFolder: true);
+                    return;
+                }
             }
 
             if (SizeLimit.IsTooLarge(output.SizeBytes))

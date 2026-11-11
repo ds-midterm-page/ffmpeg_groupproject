@@ -97,9 +97,24 @@ h1 {
     margin-top: 24px;
 }
 
+.quality-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
 .quality h3 {
-    margin: 0 0 8px;
+    margin: 0;
     font-size: 1rem;
+}
+
+.sound {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    user-select: none;
 }
 
 .option {
