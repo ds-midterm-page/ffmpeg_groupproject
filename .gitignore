@@ -9,3 +9,6 @@ TestResults/
 *.trx
 publish/
 *.log
+
+# Downloaded tool binaries (yt-dlp, ffmpeg) - not committed
+src/MediaTool.App/tools/*.exe
