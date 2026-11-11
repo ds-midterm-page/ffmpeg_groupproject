@@ -1,0 +1,9 @@
+{
+  "id": "abc",
+  "webpage_url": "https://x.com/user/status/1",
+  "thumbnail": "javascript:alert(1)",
+  "formats": [
+    { "ext": "mp4", "vcodec": "avc1", "acodec": "mp4a" },
+    { "format_id": "hls-832", "ext": "mp4", "vcodec": "avc1", "acodec": "mp4a", "width": 480, "height": 852, "tbr": 832 }
+  ]
+}
