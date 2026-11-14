@@ -16,6 +16,7 @@
   <ItemGroup>
     <None Include="tools\*.exe" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Content Include="..\..\backend\stickers.py" Link="stickers\stickers.py" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="..\..\backend\sticker_loop.py" Link="stickers\sticker_loop.py" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

@@ -10,6 +10,41 @@ from PIL import Image
 from backend.stickers import StickerError, convert_static, convert_video, validate_video, validate_static, video_filter
 
 
+class LoopScriptTests(unittest.TestCase):
+    def test_original_quality_search_and_fps_fallback(self):
+        from backend.stickers import encode_matching_loop
+        attempts = []
+        with tempfile.TemporaryDirectory() as folder:
+            output = Path(folder) / 'output.webm'
+
+            def render(args, **kwargs):
+                crf = int(args[args.index('-crf') + 1])
+                fps = int(args[args.index('-r') + 1])
+                attempts.append((fps, crf))
+                Path(args[-1]).write_bytes(b'x' * (270000 if fps == 30 or crf < 40 else 100))
+
+            with patch('backend.stickers.run_tool', side_effect=render):
+                encode_matching_loop('input', output, 'fps=30[v]', 2.95, 'h264')
+            self.assertEqual(output.stat().st_size, 100)
+            self.assertIn((30, 63), attempts)
+            self.assertIn((24, 40), attempts)
+            self.assertNotIn(20, [fps for fps, _ in attempts])
+
+    def test_matching_frames_select_a_moving_loop(self):
+        import numpy as np
+        from backend.sticker_loop import distance_matrix, find_loop, build_filter
+        phase = np.arange(120) * (2 * np.pi / 30)
+        frames = np.column_stack([np.sin(phase), np.cos(phase)]) * 100
+        found = find_loop(distance_matrix(frames), 20, 89)
+        self.assertIsNotNone(found)
+        start, end, cost = found
+        self.assertIn(end - start, (30, 60))
+        self.assertLess(cost, 0.001)
+        chain = build_filter(start, end, 4, 1, 30)
+        self.assertIn('blend=', chain)
+        self.assertNotIn('reverse', chain)
+
+
 class StickerTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
@@ -121,7 +156,7 @@ class RealVideoTests(unittest.TestCase):
 
     def test_all_video_modes_meet_specs(self):
         source = self.make_clip()
-        for mode in ('speed', 'first', 'segment', 'frame'):
+        for mode in ('speed', 'first', 'segment', 'frame', 'loop'):
             output = convert_video(source, self.root / f'{mode}.webm', option=mode,
                                    start=0.5 if mode in ('segment', 'frame') else 0,
                                    length=1, crop_black=False)
@@ -130,14 +165,28 @@ class RealVideoTests(unittest.TestCase):
             self.assertLessEqual(info['duration'], 3)
             self.assertLessEqual(info['fps'], 30)
             self.assertLessEqual(info['size'], 262144)
-            # Compare boundary motion with typical adjacent-frame motion. A
-            # ping-pong loop should not jump back across the entire scene.
+            # The matched-frame loop should avoid a large scene jump at its seam.
             result = subprocess.run(['ffmpeg', '-v', 'error', '-i', str(output), '-vf', 'scale=32:18,format=gray',
                                      '-f', 'rawvideo', '-'], capture_output=True, check=True)
             frames = [result.stdout[i:i + 576] for i in range(0, len(result.stdout), 576)]
             self.assertGreater(len(frames), 1)
             seam = sum(abs(a - b) for a, b in zip(frames[0], frames[-1])) / 576
-            self.assertLess(seam, 20)
+            if mode in ('loop', 'frame'):
+                self.assertLess(seam, 20)
+
+    def test_same_source_can_be_converted_between_image_and_video_repeatedly(self):
+        source = self.root / 'source.png'
+        Image.new('RGBA', (128, 64), (200, 0, 0, 100)).save(source)
+        for extension in ('png', 'webm', 'webp', 'webm'):
+            output = self.root / f'result.{extension}'
+            if extension == 'webm':
+                convert_video(source, output)
+                validate_video(output)
+            else:
+                convert_static(source, output)
+                validate_static(output, require_alpha=True)
+        clip = self.make_clip()
+        validate_static(convert_static(clip, self.root / 'frame.png'))
 
     def test_black_border_crop(self):
         source = self.root / 'border.mp4'

@@ -12,6 +12,7 @@ src/MediaTool.App/tools/
 # Other services in this repo have their own Dockerfiles.
 backend/*
 !backend/stickers.py
+!backend/sticker_loop.py
 frontend/
 **/node_modules/
 .venv-stickers/

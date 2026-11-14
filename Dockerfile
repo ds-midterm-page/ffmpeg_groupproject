@@ -18,6 +18,7 @@ RUN dotnet restore MediaTool.sln
 COPY src/ src/
 COPY tests/ tests/
 COPY backend/stickers.py backend/stickers.py
+COPY backend/sticker_loop.py backend/sticker_loop.py
 # Restore again now that the .razor files are present: Blazor's framework script (blazor.web.js) package is
 # only added when the SDK can see them. The earlier restore still caches every other package.
 RUN dotnet restore MediaTool.sln \
@@ -46,7 +47,7 @@ ENTRYPOINT ["dotnet", "test", "MediaTool.sln", "-c", "Release", "--no-build", "-
 # ---- final: small runtime image, non-root ----
 FROM mcr.microsoft.com/dotnet/aspnet:${DOTNET_VERSION} AS final
 RUN apt-get update \
- && apt-get install -y --no-install-recommends ffmpeg python3 python3-pil \
+ && apt-get install -y --no-install-recommends ffmpeg python3 python3-pil python3-numpy \
  && rm -rf /var/lib/apt/lists/*
 COPY --from=tools /usr/local/bin/yt-dlp /usr/local/bin/yt-dlp
 WORKDIR /app
