@@ -15,6 +15,7 @@
   <!-- Tool binaries (yt-dlp.exe, later ffmpeg) are downloaded into tools\ locally and copied next to the app; not committed. -->
   <ItemGroup>
     <None Include="tools\*.exe" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="..\..\backend\stickers.py" Link="stickers\stickers.py" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

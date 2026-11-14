@@ -10,6 +10,9 @@
 # Windows tool binaries; the image installs Linux yt-dlp and ffmpeg itself.
 src/MediaTool.App/tools/
 # Other services in this repo have their own Dockerfiles.
-backend/
+backend/*
+!backend/stickers.py
 frontend/
 **/node_modules/
+.venv-stickers/
+**/__pycache__/

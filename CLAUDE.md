@@ -61,6 +61,6 @@ tests/
 6. [ ] Trim timeline — time math tests; ffmpeg trim; ffprobe duration == end − start (±0.1 s)
 7. [ ] Presets — preset → ffmpeg argument builder; reject malformed presets and injection attempts
 8. [ ] Cleanup + polish — temp file cleanup, friendly errors, single-exe publish
-9. [ ] Later: Telegram stickers (512×512, webm ≤3 s, ≤512 KB)
+9. [x] Telegram sticker converter: static PNG/WEBP with alpha, WEBM VP9 ≤3 s / ≤256 KB, upload UI and optional Python bot. See STICKERS.md.
 
 Mark milestones done here as they are completed.

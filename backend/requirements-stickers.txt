@@ -1,0 +1,2 @@
+Pillow>=12,<14
+python-telegram-bot==22.8

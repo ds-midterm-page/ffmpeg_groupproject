@@ -9,6 +9,11 @@ TestResults/
 *.trx
 publish/
 *.log
+.venv-stickers/
+__pycache__/
+*.pyc
+.playwright-cli/
+output/playwright/
 
 # Downloaded tool binaries (yt-dlp, ffmpeg) - not committed
 src/MediaTool.App/tools/*.exe

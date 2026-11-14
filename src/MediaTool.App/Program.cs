@@ -19,6 +19,9 @@ builder.Services.AddSingleton<JobStore>();
 builder.Services.AddSingleton<JobQueue>();
 builder.Services.AddSingleton<DownloadJobRunner>();
 builder.Services.AddHostedService<DownloadWorker>();
+builder.Services.Configure<StickerOptions>(builder.Configuration.GetSection("Stickers"));
+builder.Services.AddSingleton<StickerConverter>();
+builder.Services.AddHostedService<StickerCleanupWorker>();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
@@ -35,6 +38,23 @@ app.UseAntiforgery();
 
 app.MapStaticAssets();
 app.MapFileEndpoints();
+app.MapGet("/stickers/files/{id:guid}", (Guid id, HttpContext http, StickerConverter converter) =>
+{
+    var result = converter.Take(id);
+    if (result is null || !File.Exists(result.Path)) return Results.NotFound("This sticker has expired. Please convert it again.");
+    if (result.Created < DateTime.UtcNow.AddHours(-1))
+    {
+        StickerConverter.Delete(result);
+        return Results.NotFound("This sticker has expired. Please convert it again.");
+    }
+    http.Response.OnCompleted(() =>
+    {
+        StickerConverter.Delete(result);
+        return Task.CompletedTask;
+    });
+    var mime = result.Extension switch { "png" => "image/png", "webp" => "image/webp", _ => "video/webm" };
+    return Results.File(result.Path, mime, "sticker." + result.Extension);
+});
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
