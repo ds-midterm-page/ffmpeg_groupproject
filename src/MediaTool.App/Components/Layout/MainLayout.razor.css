@@ -18,3 +18,13 @@
         right: 0.75rem;
         top: 0.5rem;
     }
+.module-nav {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 20px 16px 0;
+    display: flex;
+    gap: 20px;
+    font-family: system-ui, sans-serif;
+}
+.module-nav ::deep a { color: #5f6368; text-decoration: none; }
+.module-nav ::deep a.active { color: #1a73e8; font-weight: 600; }
