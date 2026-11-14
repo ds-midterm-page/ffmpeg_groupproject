@@ -56,7 +56,7 @@ async def choose_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data.update(mode='video', extension='webm')
     await query.edit_message_text('Choose how to fit the video:', reply_markup=keyboard([
         ('Speed up to fit 3 seconds', 'speed'), ('Take the first 3 seconds', 'first'),
-        ('Select a segment', 'segment'), ('Hold a selected frame as a loop', 'frame')]))
+        ('Select a segment', 'segment'), ('Find a seamless loop', 'loop')]))
     return OPTION
 
 
@@ -64,7 +64,7 @@ async def choose_option(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     context.user_data['option'] = query.data
-    if query.data in ('segment', 'frame'):
+    if query.data == 'segment':
         prompt = 'Send start and length in seconds, e.g. 12.5 2.5 (length up to 3).' if query.data == 'segment' else 'Send the frame time in seconds, e.g. 12.5.'
         await query.edit_message_text(prompt)
         return TIMES
@@ -129,7 +129,7 @@ def build_application(token):
     application.add_handler(ConversationHandler(
         entry_points=[MessageHandler(media, receive), CommandHandler('start', start)],
         states={MODE: [CallbackQueryHandler(choose_mode, pattern=r'^(static:(png|webp)|video)$')],
-                OPTION: [CallbackQueryHandler(choose_option, pattern=r'^(speed|first|segment|frame)$')],
+                OPTION: [CallbackQueryHandler(choose_option, pattern=r'^(speed|first|segment|loop)$')],
                 TIMES: [MessageHandler(filters.TEXT & ~filters.COMMAND, choose_times)]},
         fallbacks=[CommandHandler('cancel', cancel)], allow_reentry=True))
     return application

@@ -38,22 +38,17 @@ app.UseAntiforgery();
 
 app.MapStaticAssets();
 app.MapFileEndpoints();
-app.MapGet("/stickers/files/{id:guid}", (Guid id, HttpContext http, StickerConverter converter) =>
+app.MapGet("/stickers/files/{id:guid}", (Guid id, bool? download, StickerConverter converter) =>
 {
-    var result = converter.Take(id);
+    var result = converter.Get(id);
     if (result is null || !File.Exists(result.Path)) return Results.NotFound("This sticker has expired. Please convert it again.");
     if (result.Created < DateTime.UtcNow.AddHours(-1))
     {
-        StickerConverter.Delete(result);
+        if (converter.Take(id) is { } expired) StickerConverter.Delete(expired);
         return Results.NotFound("This sticker has expired. Please convert it again.");
     }
-    http.Response.OnCompleted(() =>
-    {
-        StickerConverter.Delete(result);
-        return Task.CompletedTask;
-    });
     var mime = result.Extension switch { "png" => "image/png", "webp" => "image/webp", _ => "video/webm" };
-    return Results.File(result.Path, mime, "sticker." + result.Extension);
+    return Results.File(result.Path, mime, download == true ? "sticker." + result.Extension : null, enableRangeProcessing: true);
 });
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();

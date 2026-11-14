@@ -87,6 +87,7 @@ public sealed class StickerConverter(IOptions<StickerOptions> options)
     }
 
     public StickerResult? Take(Guid id) => _results.TryRemove(id, out var result) ? result : null;
+    public StickerResult? Get(Guid id) => _results.TryGetValue(id, out var result) ? result : null;
 
     public static void Delete(StickerResult result)
     {
