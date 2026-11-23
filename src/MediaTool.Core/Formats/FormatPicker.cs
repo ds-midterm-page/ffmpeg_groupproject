@@ -1,3 +1,4 @@
+using MediaTool.Core.Download;
 using MediaTool.Core.Metadata;
 
 namespace MediaTool.Core.Formats;
@@ -59,23 +60,37 @@ public static class FormatPicker
             }
         }
 
-        if (includeSound && bestAudio is not null)
+        if (includeSound && PickMp3Source(metadata.Formats) is { } source)
         {
-            options.Add(new QualityOption(
-                Label: "Audio only",
-                Kind: QualityKind.Audio,
-                FormatSelector: bestAudio.FormatId,
-                Extension: bestAudio.Extension,
-                Width: null,
-                Height: null,
-                HasAudio: true,
-                EstimatedBytes: bestAudio.FileSizeBytes,
-                IsSizeEstimated: bestAudio.IsSizeEstimated,
-                ExceedsLimit: bestAudio.FileSizeBytes is { } a && SizeLimit.IsTooLarge(a, maxBytes)));
+            foreach (var kbps in AudioQuality.Mp3BitratesKbps)
+            {
+                // Constant-bitrate MP3: size is bitrate x duration.
+                long? size = metadata.Duration is { } d ? (long)(kbps * 1000 / 8.0 * d.TotalSeconds) : null;
+                options.Add(new QualityOption(
+                    Label: $"MP3 {kbps} kbps",
+                    Kind: QualityKind.Audio,
+                    FormatSelector: source.FormatId,
+                    Extension: "mp3",
+                    Width: null,
+                    Height: null,
+                    HasAudio: true,
+                    EstimatedBytes: size,
+                    IsSizeEstimated: true,
+                    ExceedsLimit: size is { } s && SizeLimit.IsTooLarge(s, maxBytes),
+                    Mp3BitrateKbps: kbps));
+            }
         }
 
         return options;
     }
+
+    /// <summary>
+    /// The stream to encode MP3 from: the highest-bitrate audio-only stream, else (e.g. TikTok) the
+    /// highest-bitrate stream that has sound baked into the video.
+    /// </summary>
+    private static MediaFormat? PickMp3Source(IReadOnlyList<MediaFormat> formats) =>
+        formats.Where(f => f.IsAudioOnly).MaxBy(f => f.BitrateKbps ?? 0)
+        ?? formats.Where(f => f is { HasAudio: true, HasVideo: true }).MaxBy(f => f.BitrateKbps ?? 0);
 
     private static (QualityOption Option, double Bitrate) BuildVideoOption(MediaFormat video, MediaFormat? audio, long maxBytes)
     {

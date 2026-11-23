@@ -40,6 +40,18 @@ public sealed class DownloadJobRunner(
                 return;
             }
 
+            if (request.Option.Mp3BitrateKbps is { } kbps)
+            {
+                await _ffmpeg.ConvertToMp3Async(output.Path, kbps, cancellationToken);
+                output = temp.FindOutput(jobId);
+                if (output is null)
+                {
+                    logger.LogError("Job {JobId}: file missing after MP3 conversion", jobId);
+                    Fail(jobId, MediaError.Unknown, deleteFolder: true);
+                    return;
+                }
+            }
+
             if (request.Option.RemoveAudio)
             {
                 await _ffmpeg.RemoveAudioAsync(output.Path, cancellationToken);

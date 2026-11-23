@@ -68,7 +68,7 @@
                         <label class="option @(option.ExceedsLimit ? "too-large" : null) @(option == _selected ? "selected" : null)">
                             <input type="radio" name="quality" checked="@(option == _selected)" disabled="@option.ExceedsLimit"
                                    @onchange="() => _selected = option" />
-                            <span class="name">@option.Label</span>
+                            <span class="name">@(option.Mp3BitrateKbps is { } kbps ? $"{kbps} kbps" : option.Label)</span>
                             <span class="type">@option.Extension.ToUpperInvariant()@(option.Kind == QualityKind.Video && !option.HasAudio ? " · no sound" : null)</span>
                             <span class="size">
                                 @(option.IsSizeEstimated && option.EstimatedBytes is not null ? "about " : null)@SizeFormatter.Format(option.EstimatedBytes)

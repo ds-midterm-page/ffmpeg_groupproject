@@ -61,7 +61,29 @@ public sealed class FfmpegRunner(IOptions<FfmpegOptions> options) : IFfmpegRunne
         }
     }
 
-    public Task ConvertToMp3Async(string path, int kbps, CancellationToken cancellationToken) => throw new NotImplementedException();
+    public async Task ConvertToMp3Async(string path, int kbps, CancellationToken cancellationToken)
+    {
+        var full = Path.GetFullPath(path);
+        var mp3 = Path.ChangeExtension(full, ".mp3");
+        var temp = Path.Combine(Path.GetDirectoryName(full)!, "mp3-" + Guid.NewGuid().ToString("N") + ".mp3");
+        try
+        {
+            await RunAsync(FfmpegArguments.ToMp3(full, temp, kbps), cancellationToken);
+            if (!string.Equals(full, mp3, StringComparison.OrdinalIgnoreCase))
+            {
+                File.Delete(full);
+            }
+
+            File.Move(temp, mp3, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(temp))
+            {
+                File.Delete(temp);
+            }
+        }
+    }
 
     private string ResolveExecutable()
     {
