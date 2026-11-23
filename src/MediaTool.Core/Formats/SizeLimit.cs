@@ -10,8 +10,16 @@ public static class SizeLimit
     public static bool IsTooLarge(long bytes, long maxBytes = MaxBytes) => bytes > maxBytes;
 }
 
+/// <summary>Size unit names in one language.</summary>
+public sealed record SizeUnits(string KB, string MB, string GB, string Unknown)
+{
+    public static readonly SizeUnits English = new("KB", "MB", "GB", "size unknown");
+}
+
 public static class SizeFormatter
 {
+    public static string Format(long? bytes, SizeUnits units, IFormatProvider culture) => throw new NotImplementedException();
+
     private const double KB = 1024;
     private const double MB = KB * 1024;
     private const double GB = MB * 1024;
