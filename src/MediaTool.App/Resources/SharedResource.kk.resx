@@ -31,6 +31,35 @@
   <data name="Status.Save" xml:space="preserve"><value>{0} сақтау</value></data>
   <data name="Status.Saved" xml:space="preserve"><value>Сақталды. «Жүктеулер» қалтасын тексеріңіз.</value></data>
   <data name="Status.Cancelled" xml:space="preserve"><value>Жүктеу тоқтатылды.</value></data>
+  <data name="Stickers.Hint" xml:space="preserve"><value>Сурет немесе бейне жүктеп, Telegram-ға дайын стикерді сақтаңыз.</value></data>
+  <data name="Stickers.Mode" xml:space="preserve"><value>Түрі</value></data>
+  <data name="Stickers.ModeLabel" xml:space="preserve"><value>Стикер түрі</value></data>
+  <data name="Stickers.DropLabel" xml:space="preserve"><value>Файлды таңдаңыз немесе сүйреп әкеліңіз</value></data>
+  <data name="Stickers.Drop" xml:space="preserve"><value>Файлды таңдаңыз немесе осында сүйреп әкеліңіз</value></data>
+  <data name="Stickers.UseTime" xml:space="preserve"><value>Ағымдағы кадр уақытын алу</value></data>
+  <data name="Stickers.SourceAlt" xml:space="preserve"><value>Жүктелген файлды алдын ала қарау</value></data>
+  <data name="Stickers.OutputFormat" xml:space="preserve"><value>Файл пішімі</value></data>
+  <data name="Stickers.ImageFormat" xml:space="preserve"><value>Сурет пішімі</value></data>
+  <data name="Stickers.FrameTime" xml:space="preserve"><value>Кадр уақыты (секунд)</value></data>
+  <data name="Stickers.VideoOption" xml:space="preserve"><value>Бейне нұсқасы</value></data>
+  <data name="Stickers.Option.speed" xml:space="preserve"><value>3 секундқа сыятындай жылдамдату</value></data>
+  <data name="Stickers.Option.first" xml:space="preserve"><value>Алғашқы 3 секундты алу</value></data>
+  <data name="Stickers.Option.segment" xml:space="preserve"><value>Үзінді таңдау</value></data>
+  <data name="Stickers.Option.loop" xml:space="preserve"><value>Үздіксіз циклді табу</value></data>
+  <data name="Stickers.Start" xml:space="preserve"><value>Басталуы (секунд)</value></data>
+  <data name="Stickers.Length" xml:space="preserve"><value>Ұзақтығы (3 секундқа дейін)</value></data>
+  <data name="Stickers.Crop" xml:space="preserve"><value>Табылған қара жиектерді кесу</value></data>
+  <data name="Stickers.Preview" xml:space="preserve"><value>Стикерді алдын ала қарау</value></data>
+  <data name="Stickers.ResultAlt" xml:space="preserve"><value>Дайын стикер</value></data>
+  <data name="Stickers.Save" xml:space="preserve"><value>Стикерді сақтау</value></data>
+  <data name="Stickers.Uploading" xml:space="preserve"><value>Файл жүктелуде…</value></data>
+  <data name="Stickers.Converting" xml:space="preserve"><value>Түрлендірілуде…</value></data>
+  <data name="Stickers.Create" xml:space="preserve"><value>Стикер жасау</value></data>
+  <data name="Stickers.Working" xml:space="preserve"><value>Стикер түрлендіріліп, тексерілуде…</value></data>
+  <data name="Stickers.ReadFailed" xml:space="preserve"><value>Файлды оқу мүмкін болмады. Оны қайта таңдаңыз немесе осында сүйреп әкеліңіз. Шектеу: 50 МБ.</value></data>
+  <data name="Stickers.Cancelled" xml:space="preserve"><value>Түрлендіру тоқтатылды немесе тым ұзаққа созылды.</value></data>
+  <data name="Stickers.Failed" xml:space="preserve"><value>Файлды түрлендіру мүмкін болмады. Файлды және Python мен FFmpeg орнатылуын тексеріңіз.</value></data>
+  <data name="Stickers.Detail" xml:space="preserve"><value>Толығырақ: {0}</value></data>
   <data name="Size.KB" xml:space="preserve"><value>КБ</value></data>
   <data name="Size.MB" xml:space="preserve"><value>МБ</value></data>
   <data name="Size.GB" xml:space="preserve"><value>ГБ</value></data>

@@ -1,29 +1,33 @@
 @page "/stickers"
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
+@using System.Globalization
+@using MediaTool.Core.Formats
 @using MediaTool.Media
+@using Microsoft.Extensions.Localization
 @inject StickerConverter Converter
+@inject IStringLocalizer<SharedResource> L
 @inject ILogger<Stickers> Logger
 @inject IJSRuntime JS
 @implements IAsyncDisposable
 
-<PageTitle>Telegram stickers · MediaTool</PageTitle>
+<PageTitle>@L["Nav.Stickers"] · MediaTool</PageTitle>
 <main class="page">
-    <h1>Telegram stickers</h1>
-    <p class="hint">Upload an image or video and save a Telegram-ready sticker.</p>
+    <h1>@L["Nav.Stickers"]</h1>
+    <p class="hint">@L["Stickers.Hint"]</p>
     <section class="quality">
-        <h3>Mode</h3>
-        <div class="choices" role="radiogroup" aria-label="Sticker mode">
+        <h3>@L["Stickers.Mode"]</h3>
+        <div class="choices" role="radiogroup" aria-label="@L["Stickers.ModeLabel"]">
             <label class="choice @(_mode == "static" ? "selected" : null)"><input type="radio" name="mode" checked="@(_mode == "static")" disabled="@_busy" @onchange='() => SetMode("static")' /> IMG</label>
             <label class="choice @(_mode == "video" ? "selected" : null)"><input type="radio" name="mode" checked="@(_mode == "video")" disabled="@_busy" @onchange='() => SetMode("video")' /> WEBM</label>
         </div>
     </section>
     <div class="upload-area @(_busy ? "disabled" : null)">
-        <InputFile @ref="_upload" OnChange="SelectFile" accept="image/*,video/*,.webm,.gif" aria-label="Choose or drop media" disabled="@_busy" />
-        <span>Choose a file or drag and drop it here</span>
+        <InputFile @ref="_upload" OnChange="SelectFile" accept="image/*,video/*,.webm,.gif" aria-label="@L["Stickers.DropLabel"]" disabled="@_busy" />
+        <span>@L["Stickers.Drop"]</span>
     </div>
     @if (_file is not null)
     {
-        <p class="meta">@_file.Name · @((_file.Size / 1024.0).ToString("0.0")) KB</p>
+        <p class="meta">@_file.Name · @Size(_file.Size)</p>
     }
     @if (_preview is not null)
     {
@@ -33,17 +37,17 @@
                 <video @ref="_video" src="@_preview" controls preload="metadata"></video>
                 @if (_mode == "static" || _option == "segment")
                 {
-                    <button type="button" class="primary" @onclick="UseCurrentTime" disabled="@_busy">Use current frame time</button>
+                    <button type="button" class="primary" @onclick="UseCurrentTime" disabled="@_busy">@L["Stickers.UseTime"]</button>
                 }
             }
-            else { <img src="@_preview" alt="Uploaded media preview" /> }
+            else { <img src="@_preview" alt="@L["Stickers.SourceAlt"]" /> }
         </section>
     }
     @if (_mode == "static")
     {
         <section class="quality">
-            <h3>Output format</h3>
-            <div class="choices" role="radiogroup" aria-label="Image format">
+            <h3>@L["Stickers.OutputFormat"]</h3>
+            <div class="choices" role="radiogroup" aria-label="@L["Stickers.ImageFormat"]">
                 @foreach (var format in new[] { "webp", "png" })
                 {
                     <label class="choice @(_format == format ? "selected" : null)"><input type="radio" name="format" checked="@(_format == format)" disabled="@_busy" @onchange="() => SetFormat(format)" /> @format.ToUpperInvariant()</label>
@@ -51,69 +55,74 @@
             </div>
             @if (_sourceIsVideo)
             {
-                <p><label>Frame time (seconds) <input type="number" min="0" step="0.01" @bind="_start" @bind:after="Invalidate" disabled="@_busy" /></label></p>
+                <p><label>@L["Stickers.FrameTime"] <input type="number" min="0" step="0.01" @bind="_start" @bind:after="Invalidate" disabled="@_busy" /></label></p>
             }
         </section>
     }
     else
     {
         <section class="quality">
-            <h3>Video option</h3>
-            <div class="choices" role="radiogroup" aria-label="Video option">
-                @foreach (var item in VideoChoices)
+            <h3>@L["Stickers.VideoOption"]</h3>
+            <div class="choices" role="radiogroup" aria-label="@L["Stickers.VideoOption"]">
+                @foreach (var key in VideoChoices)
                 {
-                    <label class="choice @(_option == item.Key ? "selected" : null)"><input type="radio" name="video-option" checked="@(_option == item.Key)" disabled="@_busy" @onchange="() => SetOption(item.Key)" /> @item.Label</label>
+                    <label class="choice @(_option == key ? "selected" : null)"><input type="radio" name="video-option" checked="@(_option == key)" disabled="@_busy" @onchange="() => SetOption(key)" /> @L[$"Stickers.Option.{key}"]</label>
                 }
             </div>
             @if (_option == "segment")
             {
-                <p><label>Start (seconds) <input type="number" min="0" step="0.01" @bind="_start" @bind:after="Invalidate" disabled="@_busy" /></label></p>
-                <p><label>Length (up to 3 seconds) <input type="number" min="0.04" max="3" step="0.01" @bind="_length" @bind:after="Invalidate" disabled="@_busy" /></label></p>
+                <p><label>@L["Stickers.Start"] <input type="number" min="0" step="0.01" @bind="_start" @bind:after="Invalidate" disabled="@_busy" /></label></p>
+                <p><label>@L["Stickers.Length"] <input type="number" min="0.04" max="3" step="0.01" @bind="_length" @bind:after="Invalidate" disabled="@_busy" /></label></p>
             }
-            <p><label class="sound"><input type="checkbox" @bind="_crop" @bind:after="Invalidate" disabled="@_busy" /> Crop detected black edges</label></p>
+            <p><label class="sound"><input type="checkbox" @bind="_crop" @bind:after="Invalidate" disabled="@_busy" /> @L["Stickers.Crop"]</label></p>
         </section>
     }
     <section class="download">
         @if (_result is { } result)
         {
-            <h3>Sticker preview</h3>
+            <h3>@L["Stickers.Preview"]</h3>
             <div class="sticker-preview">
                 @if (result.Extension == "webm")
                 {
                     <video @key="result.Id" src="@ResultUrl(result)" autoplay loop muted playsinline controls></video>
                 }
-                else { <img src="@ResultUrl(result)" alt="Created sticker preview" /> }
+                else { <img src="@ResultUrl(result)" alt="@L["Stickers.ResultAlt"]" /> }
             </div>
-            <p class="status done">@(result.Extension == "webm" ? "WEBM" : "IMG") · @((result.Size / 1024.0).ToString("0.0")) KB</p>
-            <a class="save" href="@(ResultUrl(result) + "?download=true")" download="@("sticker." + result.Extension)">Save sticker</a>
+            <p class="status done">@(result.Extension == "webm" ? "WEBM" : "IMG") · @Size(result.Size)</p>
+            <a class="save" href="@(ResultUrl(result) + "?download=true")" download="@("sticker." + result.Extension)">@L["Stickers.Save"]</a>
         }
         else
         {
-            <button type="button" class="primary" disabled="@(_busy || _source is null)" @onclick="ConvertAsync">@(_uploading ? "Uploading…" : _busy ? "Converting…" : "Create sticker")</button>
+            <button type="button" class="primary" disabled="@(_busy || _source is null)" @onclick="ConvertAsync">@(_uploading ? L["Stickers.Uploading"] : _busy ? L["Stickers.Converting"] : L["Stickers.Create"])</button>
         }
-        @if (_busy && !_uploading) { <p class="status" role="status">Converting and checking your sticker…</p> }
-        @if (_error is not null) { <p class="error" role="alert">@_error</p> }
+        @if (_busy && !_uploading) { <p class="status" role="status">@L["Stickers.Working"]</p> }
+        @if (_error is not null)
+        {
+            <p class="error" role="alert">@_error@if (_errorDetail is not null) { <br /><small>@L["Stickers.Detail", _errorDetail]</small> }</p>
+        }
     </section>
 </main>
 
 @code {
-    private static readonly (string Key, string Label)[] VideoChoices = [
-        ("speed", "Speed up to fit 3 seconds"), ("first", "Take the first 3 seconds"),
-        ("segment", "Select a segment"), ("loop", "Find a seamless loop")];
+    // Labels come from Resources/SharedResource*.resx as "Stickers.Option.<key>".
+    private static readonly string[] VideoChoices = ["speed", "first", "segment", "loop"];
     private readonly CancellationTokenSource _disposed = new();
     private IBrowserFile? _file;
     private byte[]? _source;
     private string _mode = "static", _format = "webp", _option = "speed";
     private double _start, _length = 3;
     private bool _crop = true, _busy, _uploading, _sourceIsVideo;
-    private string? _error, _preview;
+    private string? _error, _errorDetail, _preview;
     private StickerResult? _result;
     private InputFile? _upload;
     private IJSObjectReference? _module;
     private ElementReference _video;
 
     private static string ResultUrl(StickerResult result) => $"stickers/files/{result.Id}";
-    private void Invalidate() { _result = null; _error = null; }
+    private void Invalidate() { _result = null; _error = null; _errorDetail = null; }
+
+    private string Size(long bytes) => SizeFormatter.Format(
+        bytes, new SizeUnits(L["Size.KB"], L["Size.MB"], L["Size.GB"], L["Size.Unknown"]), CultureInfo.CurrentCulture);
     private void SetMode(string value) { _mode = value; Invalidate(); }
     private void SetFormat(string value) { _format = value; Invalidate(); }
     private void SetOption(string value) { _option = value; Invalidate(); }
@@ -138,7 +147,7 @@
         {
             Logger.LogWarning(ex, "Sticker upload failed");
             _source = null;
-            _error = "Could not read this file. Choose it again or drag and drop it here. Upload limit: 50 MB.";
+            _error = L["Stickers.ReadFailed"];
         }
         finally { _busy = false; _uploading = false; }
     }
@@ -157,11 +166,16 @@
             _result = await Converter.ConvertAsync(input, _mode, _mode == "video" ? "webm" : _format,
                 _option, _start, _option == "segment" ? _length : 3, _crop, _disposed.Token);
         }
-        catch (OperationCanceledException) { _error = "Conversion cancelled or timed out."; }
+        catch (OperationCanceledException) { _error = L["Stickers.Cancelled"]; }
         catch (Exception ex)
         {
             Logger.LogWarning(ex, "Sticker conversion failed");
-            _error = ex is InvalidOperationException or ArgumentException ? ex.Message : "Cannot convert this file. Check the file, Python and FFmpeg installation.";
+            // The converter's own messages are English sentences. In English show them as before;
+            // otherwise show the translated summary with the original text as a detail line.
+            var converterMessage = ex is InvalidOperationException or ArgumentException ? ex.Message : null;
+            var english = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en";
+            _error = english && converterMessage is not null ? converterMessage : L["Stickers.Failed"];
+            _errorDetail = english ? null : converterMessage;
         }
         finally { _busy = false; }
     }

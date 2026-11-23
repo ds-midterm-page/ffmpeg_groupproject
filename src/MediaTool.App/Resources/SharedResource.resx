@@ -31,6 +31,35 @@
   <data name="Status.Save" xml:space="preserve"><value>Save {0}</value></data>
   <data name="Status.Saved" xml:space="preserve"><value>Saved. Check your Downloads folder.</value></data>
   <data name="Status.Cancelled" xml:space="preserve"><value>Download cancelled.</value></data>
+  <data name="Stickers.Hint" xml:space="preserve"><value>Upload an image or video and save a Telegram-ready sticker.</value></data>
+  <data name="Stickers.Mode" xml:space="preserve"><value>Mode</value></data>
+  <data name="Stickers.ModeLabel" xml:space="preserve"><value>Sticker mode</value></data>
+  <data name="Stickers.DropLabel" xml:space="preserve"><value>Choose or drop media</value></data>
+  <data name="Stickers.Drop" xml:space="preserve"><value>Choose a file or drag and drop it here</value></data>
+  <data name="Stickers.UseTime" xml:space="preserve"><value>Use current frame time</value></data>
+  <data name="Stickers.SourceAlt" xml:space="preserve"><value>Uploaded media preview</value></data>
+  <data name="Stickers.OutputFormat" xml:space="preserve"><value>Output format</value></data>
+  <data name="Stickers.ImageFormat" xml:space="preserve"><value>Image format</value></data>
+  <data name="Stickers.FrameTime" xml:space="preserve"><value>Frame time (seconds)</value></data>
+  <data name="Stickers.VideoOption" xml:space="preserve"><value>Video option</value></data>
+  <data name="Stickers.Option.speed" xml:space="preserve"><value>Speed up to fit 3 seconds</value></data>
+  <data name="Stickers.Option.first" xml:space="preserve"><value>Take the first 3 seconds</value></data>
+  <data name="Stickers.Option.segment" xml:space="preserve"><value>Select a segment</value></data>
+  <data name="Stickers.Option.loop" xml:space="preserve"><value>Find a seamless loop</value></data>
+  <data name="Stickers.Start" xml:space="preserve"><value>Start (seconds)</value></data>
+  <data name="Stickers.Length" xml:space="preserve"><value>Length (up to 3 seconds)</value></data>
+  <data name="Stickers.Crop" xml:space="preserve"><value>Crop detected black edges</value></data>
+  <data name="Stickers.Preview" xml:space="preserve"><value>Sticker preview</value></data>
+  <data name="Stickers.ResultAlt" xml:space="preserve"><value>Created sticker preview</value></data>
+  <data name="Stickers.Save" xml:space="preserve"><value>Save sticker</value></data>
+  <data name="Stickers.Uploading" xml:space="preserve"><value>Uploading…</value></data>
+  <data name="Stickers.Converting" xml:space="preserve"><value>Converting…</value></data>
+  <data name="Stickers.Create" xml:space="preserve"><value>Create sticker</value></data>
+  <data name="Stickers.Working" xml:space="preserve"><value>Converting and checking your sticker…</value></data>
+  <data name="Stickers.ReadFailed" xml:space="preserve"><value>Could not read this file. Choose it again or drag and drop it here. Upload limit: 50 MB.</value></data>
+  <data name="Stickers.Cancelled" xml:space="preserve"><value>Conversion cancelled or timed out.</value></data>
+  <data name="Stickers.Failed" xml:space="preserve"><value>Cannot convert this file. Check the file, Python and FFmpeg installation.</value></data>
+  <data name="Stickers.Detail" xml:space="preserve"><value>Details: {0}</value></data>
   <data name="Size.KB" xml:space="preserve"><value>KB</value></data>
   <data name="Size.MB" xml:space="preserve"><value>MB</value></data>
   <data name="Size.GB" xml:space="preserve"><value>GB</value></data>

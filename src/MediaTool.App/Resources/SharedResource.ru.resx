@@ -31,6 +31,35 @@
   <data name="Status.Save" xml:space="preserve"><value>Сохранить {0}</value></data>
   <data name="Status.Saved" xml:space="preserve"><value>Сохранено. Проверьте папку «Загрузки».</value></data>
   <data name="Status.Cancelled" xml:space="preserve"><value>Загрузка отменена.</value></data>
+  <data name="Stickers.Hint" xml:space="preserve"><value>Загрузите изображение или видео и сохраните готовый стикер для Telegram.</value></data>
+  <data name="Stickers.Mode" xml:space="preserve"><value>Режим</value></data>
+  <data name="Stickers.ModeLabel" xml:space="preserve"><value>Тип стикера</value></data>
+  <data name="Stickers.DropLabel" xml:space="preserve"><value>Выберите или перетащите файл</value></data>
+  <data name="Stickers.Drop" xml:space="preserve"><value>Выберите файл или перетащите его сюда</value></data>
+  <data name="Stickers.UseTime" xml:space="preserve"><value>Взять время текущего кадра</value></data>
+  <data name="Stickers.SourceAlt" xml:space="preserve"><value>Предпросмотр загруженного файла</value></data>
+  <data name="Stickers.OutputFormat" xml:space="preserve"><value>Формат файла</value></data>
+  <data name="Stickers.ImageFormat" xml:space="preserve"><value>Формат изображения</value></data>
+  <data name="Stickers.FrameTime" xml:space="preserve"><value>Время кадра (секунды)</value></data>
+  <data name="Stickers.VideoOption" xml:space="preserve"><value>Вариант видео</value></data>
+  <data name="Stickers.Option.speed" xml:space="preserve"><value>Ускорить до 3 секунд</value></data>
+  <data name="Stickers.Option.first" xml:space="preserve"><value>Взять первые 3 секунды</value></data>
+  <data name="Stickers.Option.segment" xml:space="preserve"><value>Выбрать фрагмент</value></data>
+  <data name="Stickers.Option.loop" xml:space="preserve"><value>Найти бесшовный цикл</value></data>
+  <data name="Stickers.Start" xml:space="preserve"><value>Начало (секунды)</value></data>
+  <data name="Stickers.Length" xml:space="preserve"><value>Длительность (до 3 секунд)</value></data>
+  <data name="Stickers.Crop" xml:space="preserve"><value>Обрезать найденные чёрные поля</value></data>
+  <data name="Stickers.Preview" xml:space="preserve"><value>Предпросмотр стикера</value></data>
+  <data name="Stickers.ResultAlt" xml:space="preserve"><value>Готовый стикер</value></data>
+  <data name="Stickers.Save" xml:space="preserve"><value>Сохранить стикер</value></data>
+  <data name="Stickers.Uploading" xml:space="preserve"><value>Загрузка файла…</value></data>
+  <data name="Stickers.Converting" xml:space="preserve"><value>Конвертация…</value></data>
+  <data name="Stickers.Create" xml:space="preserve"><value>Создать стикер</value></data>
+  <data name="Stickers.Working" xml:space="preserve"><value>Конвертируем и проверяем стикер…</value></data>
+  <data name="Stickers.ReadFailed" xml:space="preserve"><value>Не удалось прочитать файл. Выберите его снова или перетащите сюда. Ограничение: 50 МБ.</value></data>
+  <data name="Stickers.Cancelled" xml:space="preserve"><value>Конвертация отменена или заняла слишком много времени.</value></data>
+  <data name="Stickers.Failed" xml:space="preserve"><value>Не удалось конвертировать файл. Проверьте файл и установку Python и FFmpeg.</value></data>
+  <data name="Stickers.Detail" xml:space="preserve"><value>Подробности: {0}</value></data>
   <data name="Size.KB" xml:space="preserve"><value>КБ</value></data>
   <data name="Size.MB" xml:space="preserve"><value>МБ</value></data>
   <data name="Size.GB" xml:space="preserve"><value>ГБ</value></data>
