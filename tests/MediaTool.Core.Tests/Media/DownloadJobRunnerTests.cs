@@ -184,6 +184,67 @@ public class DownloadJobRunnerTests
         done.FileSizeBytes.Should().Be(18 * MB, "the size is re-read after removing sound");
     }
 
+    private static readonly QualityOption Mp3 = new(
+        "MP3 192 kbps", QualityKind.Audio, "251", "mp3", null, null, true, 5 * MB, true, false, Mp3BitrateKbps: 192);
+
+    [Fact]
+    public async Task Mp3_option_converts_the_download_and_rechecks_size()
+    {
+        var job = Start(Request(Mp3));
+        _temp.FindOutput(job.Id).Returns(
+            new OutputFile(@"C:\Temp\MediaTool\x\media.webm", 4 * MB),
+            new OutputFile(@"C:\Temp\MediaTool\x\media.mp3", 5 * MB));
+
+        await Sut.RunAsync(job.Id, Request(Mp3), CancellationToken.None);
+
+        await _ffmpeg.Received(1).ConvertToMp3Async(@"C:\Temp\MediaTool\x\media.webm", 192, Arg.Any<CancellationToken>());
+        var done = _store.Get(job.Id)!;
+        done.Status.Should().Be(JobStatus.Completed);
+        done.FilePath.Should().EndWith(".mp3");
+        done.DownloadName.Should().Be("My video.mp3");
+        done.FileSizeBytes.Should().Be(5 * MB);
+    }
+
+    [Fact]
+    public async Task Video_options_are_never_converted_to_mp3()
+    {
+        var job = Start(Request());
+        _temp.FindOutput(job.Id).Returns(new OutputFile("f.mp4", MB));
+
+        await Sut.RunAsync(job.Id, Request(), CancellationToken.None);
+
+        await _ffmpeg.DidNotReceiveWithAnyArgs().ConvertToMp3Async(default!, default, default);
+    }
+
+    [Fact]
+    public async Task Mp3_over_limit_after_conversion_fails()
+    {
+        var job = Start(Request(Mp3));
+        _temp.FindOutput(job.Id).Returns(
+            new OutputFile(@"C:\Temp\MediaTool\x\media.webm", 4 * MB),
+            new OutputFile(@"C:\Temp\MediaTool\x\media.mp3", 50 * MB + 1));
+
+        await Sut.RunAsync(job.Id, Request(Mp3), CancellationToken.None);
+
+        _store.Get(job.Id)!.Error.Should().Be(MediaError.TooLarge);
+        _temp.Received().DeleteJobFolder(job.Id);
+    }
+
+    [Fact]
+    public async Task Failed_mp3_conversion_is_a_plain_unknown_error()
+    {
+        var job = Start(Request(Mp3));
+        _temp.FindOutput(job.Id).Returns(new OutputFile(@"C:\Temp\MediaTool\x\media.webm", 4 * MB));
+        _ffmpeg.ConvertToMp3Async(default!, default, default).ThrowsAsyncForAnyArgs(new FfmpegException(1, "Unknown encoder 'libmp3lame'"));
+
+        await Sut.RunAsync(job.Id, Request(Mp3), CancellationToken.None);
+
+        var failed = _store.Get(job.Id)!;
+        failed.Error.Should().Be(MediaError.Unknown);
+        failed.Message.Should().NotContain("libmp3lame");
+        _temp.Received().DeleteJobFolder(job.Id);
+    }
+
     [Fact]
     public async Task Sound_is_left_alone_for_normal_options()
     {

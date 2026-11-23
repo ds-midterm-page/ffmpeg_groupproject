@@ -26,6 +26,8 @@ public static class FfmpegArguments
         ];
     }
 
+    public static IReadOnlyList<string> ToMp3(string inputPath, string outputPath, int kbps) => throw new NotImplementedException();
+
     // Full paths can never be mistaken for ffmpeg options (they don't start with '-').
     private static void RequireFullPath(string path, string name)
     {

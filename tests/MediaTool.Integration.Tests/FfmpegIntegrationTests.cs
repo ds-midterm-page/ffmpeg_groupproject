@@ -36,6 +36,26 @@ public sealed class FfmpegIntegrationTests : IDisposable
         Directory.GetFiles(_folder).Should().ContainSingle("the temporary silent copy replaces the original");
     }
 
+    [SkippableFact]
+    public async Task Convert_to_mp3_replaces_the_file_with_an_mp3_at_the_chosen_bitrate()
+    {
+        Skip.IfNot(Tools.OnPath("ffmpeg") && Tools.OnPath("ffprobe"), "ffmpeg/ffprobe not on PATH.");
+
+        var clip = Path.Combine(_folder, "media.mp4");
+        await MakeClipWithSoundAsync(clip);
+
+        var runner = new FfmpegRunner(Options.Create(new FfmpegOptions()));
+        await runner.ConvertToMp3Async(clip, 192, CancellationToken.None);
+
+        var mp3 = Path.Combine(_folder, "media.mp3");
+        Directory.GetFiles(_folder).Should().ContainSingle().Which.Should().Be(mp3);
+        var probe = await FFProbe.AnalyseAsync(mp3);
+        probe.PrimaryVideoStream.Should().BeNull();
+        probe.PrimaryAudioStream!.CodecName.Should().Be("mp3");
+        probe.PrimaryAudioStream.BitRate.Should().BeInRange(180_000, 200_000);
+        probe.Duration.TotalSeconds.Should().BeApproximately(2, 0.15);
+    }
+
     private static async Task MakeClipWithSoundAsync(string path)
     {
         var psi = new ProcessStartInfo("ffmpeg") { UseShellExecute = false, RedirectStandardError = true, CreateNoWindow = true };

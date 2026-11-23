@@ -24,7 +24,7 @@ public class FormatPickerTests
     {
         var options = FormatPicker.GetOptions(YouTube);
 
-        options.Select(o => o.Label).Should().Equal("720p", "480p", "360p", "Audio only");
+        options.Select(o => o.Label).Should().Equal("720p", "480p", "360p", "MP3 320 kbps", "MP3 192 kbps", "MP3 128 kbps");
     }
 
     [Fact]
@@ -55,13 +55,72 @@ public class FormatPickerTests
     }
 
     [Fact]
-    public void Audio_only_prefers_m4a_over_webm()
+    public void Audio_is_mp3_only_at_320_192_and_128_kbps()
     {
-        var audio = FormatPicker.GetOptions(YouTube).Single(o => o.Kind == QualityKind.Audio);
+        var audio = FormatPicker.GetOptions(YouTube).Where(o => o.Kind == QualityKind.Audio).ToList();
 
-        audio.FormatSelector.Should().Be("140");
-        audio.Extension.Should().Be("m4a");
-        audio.EstimatedBytes.Should().Be(3_449_826);
+        audio.Select(o => o.Mp3BitrateKbps).Should().Equal(320, 192, 128);
+        audio.Should().OnlyContain(o => o.Extension == "mp3" && o.HasAudio && !o.RemoveAudio);
+    }
+
+    [Fact]
+    public void Mp3_is_encoded_from_the_highest_bitrate_audio_stream()
+    {
+        // webm/opus "251" (135 kbit/s) beats m4a "140" (129.5) and "139" (48.8) as the encoding source.
+        FormatPicker.GetOptions(YouTube).Where(o => o.Kind == QualityKind.Audio)
+            .Should().OnlyContain(o => o.FormatSelector == "251");
+    }
+
+    [Fact]
+    public void Mp3_size_is_estimated_from_bitrate_and_duration()
+    {
+        var audio = FormatPicker.GetOptions(YouTube).Where(o => o.Kind == QualityKind.Audio).ToDictionary(o => o.Mp3BitrateKbps!.Value);
+
+        // 213 s: kbps * 1000 / 8 * 213
+        audio[320].EstimatedBytes.Should().Be(8_520_000);
+        audio[192].EstimatedBytes.Should().Be(5_112_000);
+        audio[128].EstimatedBytes.Should().Be(3_408_000);
+        audio.Values.Should().OnlyContain(o => o.IsSizeEstimated);
+    }
+
+    [Fact]
+    public void Long_audio_marks_only_the_bitrates_over_50_MB()
+    {
+        // 30 min: 320 kbps = 72 MB (too large), 192 kbps = 43.2 MB, 128 kbps = 28.8 MB.
+        var meta = With(TimeSpan.FromMinutes(30), Audio("a", 130, 30 * MB));
+
+        var audio = FormatPicker.GetOptions(meta).ToDictionary(o => o.Mp3BitrateKbps!.Value);
+
+        audio[320].ExceedsLimit.Should().BeTrue();
+        audio[192].ExceedsLimit.Should().BeFalse();
+        audio[128].ExceedsLimit.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Mp3_without_known_duration_has_unknown_size()
+    {
+        var meta = With(null, Audio("a", 130, 3 * MB));
+
+        FormatPicker.GetOptions(meta).Should().OnlyContain(o => o.EstimatedBytes == null && !o.ExceedsLimit);
+    }
+
+    [Fact]
+    public void Mp3_comes_from_a_combined_stream_when_there_is_no_audio_only_stream()
+    {
+        var tiktok = YtDlpMetadataParser.Parse(Fixture.Read("tiktok_video.json"));
+
+        var audio = FormatPicker.GetOptions(tiktok).Where(o => o.Kind == QualityKind.Audio).ToList();
+
+        audio.Should().HaveCount(3);
+        audio.Should().OnlyContain(o => o.FormatSelector == "h264_540p_1100000-0" && o.Extension == "mp3");
+    }
+
+    [Fact]
+    public void Video_only_streams_never_become_mp3()
+    {
+        var meta = With(TimeSpan.FromSeconds(10), Video("v", 1280, 720, 800, 1 * MB));
+
+        FormatPicker.GetOptions(meta).Should().NotContain(o => o.Kind == QualityKind.Audio);
     }
 
     [Fact]
@@ -100,7 +159,7 @@ public class FormatPickerTests
         options["720p"].ExceedsLimit.Should().BeTrue();
         options["720p"].EstimatedBytes.Should().Be(65 * MB);
         options["360p"].ExceedsLimit.Should().BeFalse();
-        options["Audio only"].ExceedsLimit.Should().BeFalse();
+        options["MP3 128 kbps"].ExceedsLimit.Should().BeFalse();
     }
 
     [Fact]
@@ -108,7 +167,7 @@ public class FormatPickerTests
     {
         var meta = With(TimeSpan.FromMinutes(1), Video("v", 1280, 720, 1000, 50 * MB, audio: "aac"));
 
-        FormatPicker.GetOptions(meta).Single().ExceedsLimit.Should().BeFalse();
+        FormatPicker.GetOptions(meta).Single(o => o.Kind == QualityKind.Video).ExceedsLimit.Should().BeFalse();
     }
 
     [Fact]
@@ -116,7 +175,7 @@ public class FormatPickerTests
     {
         var meta = With(null, Video("v", 854, 480, 0, null, audio: "aac"));
 
-        var option = FormatPicker.GetOptions(meta).Single();
+        var option = FormatPicker.GetOptions(meta).Single(o => o.Kind == QualityKind.Video);
 
         option.EstimatedBytes.Should().BeNull();
         option.ExceedsLimit.Should().BeFalse("the real size is checked after download");

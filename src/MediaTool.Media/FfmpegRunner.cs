@@ -23,6 +23,10 @@ public interface IFfmpegRunner
     /// <summary>Drops all audio from the file, replacing it in place.</summary>
     /// <exception cref="FfmpegException">ffmpeg failed.</exception>
     Task RemoveAudioAsync(string path, CancellationToken cancellationToken);
+
+    /// <summary>Encodes the file's first audio stream to "&lt;name&gt;.mp3" next to it and deletes the original.</summary>
+    /// <exception cref="FfmpegException">ffmpeg failed.</exception>
+    Task ConvertToMp3Async(string path, int kbps, CancellationToken cancellationToken);
 }
 
 /// <summary>ffmpeg ran but failed. <see cref="StandardError"/> is for the log, never for the user.</summary>
@@ -56,6 +60,8 @@ public sealed class FfmpegRunner(IOptions<FfmpegOptions> options) : IFfmpegRunne
             }
         }
     }
+
+    public Task ConvertToMp3Async(string path, int kbps, CancellationToken cancellationToken) => throw new NotImplementedException();
 
     private string ResolveExecutable()
     {
