@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generated: keep keys identical in SharedResource.resx, .ru.resx and .kk.resx (checked by TranslationFilesTests). -->
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Nav.Downloader" xml:space="preserve"><value>Video downloader</value></data>
+  <data name="Nav.Stickers" xml:space="preserve"><value>Telegram stickers</value></data>
+  <data name="Nav.Language" xml:space="preserve"><value>Language</value></data>
+  <data name="App.ErrorUnhandled" xml:space="preserve"><value>An unhandled error has occurred.</value></data>
+  <data name="App.Reload" xml:space="preserve"><value>Reload</value></data>
+  <data name="Home.Hint" xml:space="preserve"><value>Paste a link from YouTube, TikTok, Instagram or X.</value></data>
+  <data name="Home.LinkLabel" xml:space="preserve"><value>Video link</value></data>
+  <data name="Home.Preview" xml:space="preserve"><value>Preview</value></data>
+  <data name="Home.Loading" xml:space="preserve"><value>Loading…</value></data>
+  <data name="Home.Length" xml:space="preserve"><value>Length: {0}</value></data>
+  <data name="Home.Quality" xml:space="preserve"><value>Quality</value></data>
+  <data name="Home.IncludeSound" xml:space="preserve"><value>Include sound</value></data>
+  <data name="Home.NoQuality" xml:space="preserve"><value>No downloadable quality was found for this video.</value></data>
+  <data name="Home.NoSound" xml:space="preserve"><value>no sound</value></data>
+  <data name="Home.About" xml:space="preserve"><value>about {0}</value></data>
+  <data name="Home.OverLimit" xml:space="preserve"><value>over 50 MB</value></data>
+  <data name="Home.Kbps" xml:space="preserve"><value>{0} kbps</value></data>
+  <data name="Home.Mp3" xml:space="preserve"><value>MP3 {0} kbps</value></data>
+  <data name="Home.Download" xml:space="preserve"><value>Download {0}</value></data>
+  <data name="Home.DownloadNoSound" xml:space="preserve"><value>Download {0} (no sound)</value></data>
+  <data name="Status.Queued" xml:space="preserve"><value>Waiting to start…</value></data>
+  <data name="Status.Downloading" xml:space="preserve"><value>Downloading…</value></data>
+  <data name="Status.Ready" xml:space="preserve"><value>Ready ({0}).</value></data>
+  <data name="Status.Save" xml:space="preserve"><value>Save {0}</value></data>
+  <data name="Status.Saved" xml:space="preserve"><value>Saved. Check your Downloads folder.</value></data>
+  <data name="Status.Cancelled" xml:space="preserve"><value>Download cancelled.</value></data>
+  <data name="Size.KB" xml:space="preserve"><value>KB</value></data>
+  <data name="Size.MB" xml:space="preserve"><value>MB</value></data>
+  <data name="Size.GB" xml:space="preserve"><value>GB</value></data>
+  <data name="Size.Unknown" xml:space="preserve"><value>size unknown</value></data>
+  <data name="Error.InvalidLink" xml:space="preserve"><value>That doesn't look like a valid link. Copy the full address of a video and paste it here.</value></data>
+  <data name="Error.UnsupportedSite" xml:space="preserve"><value>This site isn't supported. Paste a link from YouTube, TikTok, Instagram or X (Twitter).</value></data>
+  <data name="Error.UnsupportedLink" xml:space="preserve"><value>This link doesn't point to a single video. Open the video itself and copy its address.</value></data>
+  <data name="Error.PrivateVideo" xml:space="preserve"><value>This video is private, so it can't be downloaded.</value></data>
+  <data name="Error.Removed" xml:space="preserve"><value>This video is no longer available. It may have been removed or deleted.</value></data>
+  <data name="Error.LoginRequired" xml:space="preserve"><value>This video needs you to be signed in. Add a cookies file in Settings and try again.</value></data>
+  <data name="Error.NoVideo" xml:space="preserve"><value>There's no video at this link.</value></data>
+  <data name="Error.LiveStream" xml:space="preserve"><value>Live streams can't be downloaded. Try again once the stream has ended.</value></data>
+  <data name="Error.Network" xml:space="preserve"><value>Couldn't reach the site. Check your internet connection and try again.</value></data>
+  <data name="Error.ToolMissing" xml:space="preserve"><value>The downloader component is missing. Please reinstall MediaTool.</value></data>
+  <data name="Error.TooLarge" xml:space="preserve"><value>This file would be larger than 50 MB. Pick a lower quality or trim the video.</value></data>
+  <data name="Error.Unknown" xml:space="preserve"><value>Something went wrong while reading this video. Please try again later.</value></data>
+</root>

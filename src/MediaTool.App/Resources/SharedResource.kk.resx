@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generated: keep keys identical in SharedResource.resx, .ru.resx and .kk.resx (checked by TranslationFilesTests). -->
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Nav.Downloader" xml:space="preserve"><value>Бейне жүктеу</value></data>
+  <data name="Nav.Stickers" xml:space="preserve"><value>Telegram стикерлері</value></data>
+  <data name="Nav.Language" xml:space="preserve"><value>Тіл</value></data>
+  <data name="App.ErrorUnhandled" xml:space="preserve"><value>Күтпеген қате орын алды.</value></data>
+  <data name="App.Reload" xml:space="preserve"><value>Қайта жүктеу</value></data>
+  <data name="Home.Hint" xml:space="preserve"><value>YouTube, TikTok, Instagram немесе X сілтемесін қойыңыз.</value></data>
+  <data name="Home.LinkLabel" xml:space="preserve"><value>Бейне сілтемесі</value></data>
+  <data name="Home.Preview" xml:space="preserve"><value>Алдын ала қарау</value></data>
+  <data name="Home.Loading" xml:space="preserve"><value>Жүктелуде…</value></data>
+  <data name="Home.Length" xml:space="preserve"><value>Ұзақтығы: {0}</value></data>
+  <data name="Home.Quality" xml:space="preserve"><value>Сапасы</value></data>
+  <data name="Home.IncludeSound" xml:space="preserve"><value>Дыбыспен</value></data>
+  <data name="Home.NoQuality" xml:space="preserve"><value>Бұл бейне үшін жүктеуге болатын сапа табылмады.</value></data>
+  <data name="Home.NoSound" xml:space="preserve"><value>дыбыссыз</value></data>
+  <data name="Home.About" xml:space="preserve"><value>шамамен {0}</value></data>
+  <data name="Home.OverLimit" xml:space="preserve"><value>50 МБ-тан артық</value></data>
+  <data name="Home.Kbps" xml:space="preserve"><value>{0} кбит/с</value></data>
+  <data name="Home.Mp3" xml:space="preserve"><value>MP3 {0} кбит/с</value></data>
+  <data name="Home.Download" xml:space="preserve"><value>{0} жүктеу</value></data>
+  <data name="Home.DownloadNoSound" xml:space="preserve"><value>{0} жүктеу (дыбыссыз)</value></data>
+  <data name="Status.Queued" xml:space="preserve"><value>Басталуын күтуде…</value></data>
+  <data name="Status.Downloading" xml:space="preserve"><value>Жүктелуде…</value></data>
+  <data name="Status.Ready" xml:space="preserve"><value>Дайын ({0}).</value></data>
+  <data name="Status.Save" xml:space="preserve"><value>{0} сақтау</value></data>
+  <data name="Status.Saved" xml:space="preserve"><value>Сақталды. «Жүктеулер» қалтасын тексеріңіз.</value></data>
+  <data name="Status.Cancelled" xml:space="preserve"><value>Жүктеу тоқтатылды.</value></data>
+  <data name="Size.KB" xml:space="preserve"><value>КБ</value></data>
+  <data name="Size.MB" xml:space="preserve"><value>МБ</value></data>
+  <data name="Size.GB" xml:space="preserve"><value>ГБ</value></data>
+  <data name="Size.Unknown" xml:space="preserve"><value>өлшемі белгісіз</value></data>
+  <data name="Error.InvalidLink" xml:space="preserve"><value>Бұл дұрыс сілтемеге ұқсамайды. Бейненің толық мекенжайын көшіріп, осында қойыңыз.</value></data>
+  <data name="Error.UnsupportedSite" xml:space="preserve"><value>Бұл сайтқа қолдау көрсетілмейді. YouTube, TikTok, Instagram немесе X (Twitter) сілтемесін қойыңыз.</value></data>
+  <data name="Error.UnsupportedLink" xml:space="preserve"><value>Бұл сілтеме жеке бейнеге апармайды. Бейненің өзін ашып, мекенжайын көшіріңіз.</value></data>
+  <data name="Error.PrivateVideo" xml:space="preserve"><value>Бұл бейне жабық, сондықтан оны жүктеу мүмкін емес.</value></data>
+  <data name="Error.Removed" xml:space="preserve"><value>Бұл бейне енді қолжетімсіз. Мүмкін, ол жойылған.</value></data>
+  <data name="Error.LoginRequired" xml:space="preserve"><value>Бұл бейне үшін аккаунтқа кіру қажет. Баптауларда cookies файлын қосып, қайталап көріңіз.</value></data>
+  <data name="Error.NoVideo" xml:space="preserve"><value>Бұл сілтемеде бейне жоқ.</value></data>
+  <data name="Error.LiveStream" xml:space="preserve"><value>Тікелей эфирді жүктеу мүмкін емес. Эфир аяқталғаннан кейін қайталап көріңіз.</value></data>
+  <data name="Error.Network" xml:space="preserve"><value>Сайтқа қосылу мүмкін болмады. Интернет байланысын тексеріп, қайталап көріңіз.</value></data>
+  <data name="Error.ToolMissing" xml:space="preserve"><value>Жүктеу құрамдас бөлігі жоқ. MediaTool бағдарламасын қайта орнатыңыз.</value></data>
+  <data name="Error.TooLarge" xml:space="preserve"><value>Файл 50 МБ-тан үлкен болады. Төменірек сапаны таңдаңыз немесе бейнені қысқартыңыз.</value></data>
+  <data name="Error.Unknown" xml:space="preserve"><value>Бұл бейнені өңдеу кезінде қате шықты. Кейінірек қайталап көріңіз.</value></data>
+</root>

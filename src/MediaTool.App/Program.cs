@@ -2,6 +2,8 @@ using System.Diagnostics;
 using MediaTool.App;
 using MediaTool.App.Components;
 using MediaTool.Core.Hosting;
+using MediaTool.Core.Localization;
+using Microsoft.AspNetCore.Localization;
 using MediaTool.Media;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,6 +25,8 @@ builder.Services.Configure<StickerOptions>(builder.Configuration.GetSection("Sti
 builder.Services.AddSingleton<StickerConverter>();
 builder.Services.AddHostedService<StickerCleanupWorker>();
 
+builder.Services.AddLocalization(o => o.ResourcesPath = "Resources");
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
@@ -34,10 +38,25 @@ if (!app.Environment.IsDevelopment())
 }
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 
+// Interface language: cookie set by /culture, else the browser's language, else English.
+app.UseRequestLocalization(new RequestLocalizationOptions()
+    .SetDefaultCulture(SupportedCultures.Default)
+    .AddSupportedCultures([.. SupportedCultures.Codes])
+    .AddSupportedUICultures([.. SupportedCultures.Codes]));
+
 app.UseAntiforgery();
 
 app.MapStaticAssets();
 app.MapFileEndpoints();
+app.MapGet("/culture", (string? c, string? redirect, HttpContext http) =>
+{
+    var code = SupportedCultures.Normalize(c);
+    http.Response.Cookies.Append(
+        CookieRequestCultureProvider.DefaultCookieName,
+        CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(code)),
+        new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), IsEssential = true, HttpOnly = true, SameSite = SameSiteMode.Lax });
+    return Results.LocalRedirect(SupportedCultures.SafeReturnPath(redirect));
+});
 app.MapGet("/stickers/files/{id:guid}", (Guid id, bool? download, StickerConverter converter) =>
 {
     var result = converter.Get(id);

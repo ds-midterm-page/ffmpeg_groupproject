@@ -28,3 +28,6 @@
 }
 .module-nav ::deep a { color: #5f6368; text-decoration: none; }
 .module-nav ::deep a.active { color: #1a73e8; font-weight: 600; }
+.languages { margin-left: auto; display: flex; gap: 10px; font-size: 0.9rem; }
+.languages a { color: #5f6368; text-decoration: none; }
+.languages a.current { color: #1a73e8; font-weight: 600; }

@@ -1,13 +1,33 @@
 ﻿@inherits LayoutComponentBase
+@using System.Globalization
+@using MediaTool.Core.Localization
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<SharedResource> L
+@inject NavigationManager Nav
 
 <nav class="module-nav" aria-label="Media tools">
-    <NavLink href="/" Match="NavLinkMatch.All">Video downloader</NavLink>
-    <NavLink href="/stickers">Telegram stickers</NavLink>
+    <NavLink href="/" Match="NavLinkMatch.All">@L["Nav.Downloader"]</NavLink>
+    <NavLink href="/stickers">@L["Nav.Stickers"]</NavLink>
+    <span class="languages" role="group" aria-label="@L["Nav.Language"]">
+        @foreach (var culture in SupportedCultures.Codes)
+        {
+            @* Full page load: the language is chosen when the page connects. *@
+            <a href="@($"culture?c={culture}&redirect={Uri.EscapeDataString(ReturnPath)}")" data-enhance-nav="false"
+               class="@(culture == Current ? "current" : null)" aria-current="@(culture == Current ? "true" : null)"
+               lang="@culture">@SupportedCultures.NativeName(culture)</a>
+        }
+    </span>
 </nav>
 @Body
 
 <div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
+    @L["App.ErrorUnhandled"]
+    <a href="." class="reload">@L["App.Reload"]</a>
     <span class="dismiss">🗙</span>
 </div>
+
+@code {
+    private static string Current => SupportedCultures.Normalize(CultureInfo.CurrentUICulture.Name);
+
+    private string ReturnPath => "/" + Nav.ToBaseRelativePath(Nav.Uri);
+}

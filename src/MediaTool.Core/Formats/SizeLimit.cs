@@ -18,7 +18,13 @@ public sealed record SizeUnits(string KB, string MB, string GB, string Unknown)
 
 public static class SizeFormatter
 {
-    public static string Format(long? bytes, SizeUnits units, IFormatProvider culture) => throw new NotImplementedException();
+    public static string Format(long? bytes, SizeUnits units, IFormatProvider culture) => bytes switch
+    {
+        null => units.Unknown,
+        < (long)MB => string.Create(culture, $"{Math.Round(bytes.Value / KB):0} {units.KB}"),
+        < (long)GB => string.Create(culture, $"{bytes.Value / MB:0.0} {units.MB}"),
+        _ => string.Create(culture, $"{bytes.Value / GB:0.0} {units.GB}"),
+    };
 
     private const double KB = 1024;
     private const double MB = KB * 1024;

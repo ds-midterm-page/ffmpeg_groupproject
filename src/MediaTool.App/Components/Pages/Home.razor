@@ -1,4 +1,4 @@
-﻿@page "/"
+@page "/"
 @* No prerender: otherwise a link pasted before the live connection starts is silently wiped. *@
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 @using System.Globalization
@@ -6,7 +6,9 @@
 @using MediaTool.Core.Formats
 @using MediaTool.Core.Metadata
 @using MediaTool.Media
+@using Microsoft.Extensions.Localization
 @inject MetadataService Metadata
+@inject IStringLocalizer<SharedResource> L
 @inject JobQueue Jobs
 @implements IDisposable
 
@@ -14,19 +16,19 @@
 
 <main class="page">
     <h1>MediaTool</h1>
-    <p class="hint">Paste a link from YouTube, TikTok, Instagram or X.</p>
+    <p class="hint">@L["Home.Hint"]</p>
 
     <form class="paste" @onsubmit="LoadPreviewAsync">
         <input type="text" @bind="_link" @bind:event="oninput" placeholder="https://www.youtube.com/watch?v=…"
-               aria-label="Video link" autocomplete="off" spellcheck="false" disabled="@_loading" />
+               aria-label="@L["Home.LinkLabel"]" autocomplete="off" spellcheck="false" disabled="@_loading" />
         <button type="submit" disabled="@(_loading || string.IsNullOrWhiteSpace(_link))">
-            @(_loading ? "Loading…" : "Preview")
+            @(_loading ? L["Home.Loading"] : L["Home.Preview"])
         </button>
     </form>
 
     @if (_result is { IsSuccess: false } failed)
     {
-        <p class="error" role="alert">@failed.Message</p>
+        <p class="error" role="alert">@L[$"Error.{failed.Error}"]</p>
     }
     else if (_result?.Metadata is { } video)
     {
@@ -42,39 +44,39 @@
                     <p class="uploader">@video.Uploader</p>
                 }
                 <p class="meta">
-                    <span>Length: @DurationFormatter.Format(video.Duration)</span>
+                    <span>@L["Home.Length", DurationFormatter.Format(video.Duration)]</span>
                 </p>
             </div>
         </section>
 
         <section class="quality">
             <div class="quality-head">
-                <h3>Quality</h3>
+                <h3>@L["Home.Quality"]</h3>
                 <label class="sound">
                     <input type="checkbox" checked="@_includeSound" disabled="@(_job is { IsFinished: false })"
                            @onchange="e => SetIncludeSound(video, e.Value is true)" />
-                    Include sound
+                    @L["Home.IncludeSound"]
                 </label>
             </div>
             @if (_options.Count == 0)
             {
-                <p class="error" role="alert">No downloadable quality was found for this video.</p>
+                <p class="error" role="alert">@L["Home.NoQuality"]</p>
             }
             else
             {
-                <div role="radiogroup" aria-label="Quality">
+                <div role="radiogroup" aria-label="@L["Home.Quality"]">
                     @foreach (var option in _options)
                     {
                         <label class="option @(option.ExceedsLimit ? "too-large" : null) @(option == _selected ? "selected" : null)">
                             <input type="radio" name="quality" checked="@(option == _selected)" disabled="@option.ExceedsLimit"
                                    @onchange="() => _selected = option" />
-                            <span class="name">@(option.Mp3BitrateKbps is { } kbps ? $"{kbps} kbps" : option.Label)</span>
-                            <span class="type">@option.Extension.ToUpperInvariant()@(option.Kind == QualityKind.Video && !option.HasAudio ? " · no sound" : null)</span>
+                            <span class="name">@(option.Mp3BitrateKbps is { } kbps ? L["Home.Kbps", kbps].Value : option.Label)</span>
+                            <span class="type">@option.Extension.ToUpperInvariant()@(option.Kind == QualityKind.Video && !option.HasAudio ? $" · {L["Home.NoSound"]}" : null)</span>
                             <span class="size">
-                                @(option.IsSizeEstimated && option.EstimatedBytes is not null ? "about " : null)@SizeFormatter.Format(option.EstimatedBytes)
+                                @(option.IsSizeEstimated && option.EstimatedBytes is not null ? L["Home.About", Size(option.EstimatedBytes)].Value : Size(option.EstimatedBytes))
                                 @if (option.ExceedsLimit)
                                 {
-                                    <em> · over 50 MB</em>
+                                    <em> · @L["Home.OverLimit"]</em>
                                 }
                             </span>
                         </label>
@@ -82,7 +84,7 @@
                 </div>
                 @if (_selected is null)
                 {
-                    <p class="error" role="alert">@MediaErrorMessages.For(MediaError.TooLarge)</p>
+                    <p class="error" role="alert">@L["Error.TooLarge"]</p>
                 }
             }
         </section>
@@ -93,7 +95,7 @@
                 @if (_job is null || _job.IsFinished)
                 {
                     <button type="button" class="primary" @onclick="() => StartDownloadAsync(video)">
-                        Download @_selected.Label@(_selected.Kind == QualityKind.Video && !_selected.HasAudio ? " (no sound)" : null)
+                        @DownloadLabel(_selected)
                     </button>
                 }
 
@@ -102,23 +104,26 @@
                     @switch (job.Status)
                     {
                         case JobStatus.Queued:
-                            <p class="status">Waiting to start…</p>
+                            <p class="status">@L["Status.Queued"]</p>
                             break;
                         case JobStatus.Downloading:
                             <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@((int)(job.Percent ?? 0))">
                                 <div class="bar" style="width: @(((int)(job.Percent ?? 0)).ToString(CultureInfo.InvariantCulture))%"></div>
                             </div>
-                            <p class="status">Downloading… @(job.Percent is { } p ? $"{(int)p}%" : null)</p>
+                            <p class="status">@L["Status.Downloading"] @(job.Percent is { } p ? $"{(int)p}%" : null)</p>
                             break;
                         case JobStatus.Completed when job.FilePath is not null:
-                            <p class="status done">Ready (@SizeFormatter.Format(job.FileSizeBytes)).</p>
-                            <a class="save" href="files/@job.Id" download="@job.DownloadName">Save @job.DownloadName</a>
+                            <p class="status done">@L["Status.Ready", Size(job.FileSizeBytes)]</p>
+                            <a class="save" href="files/@job.Id" download="@job.DownloadName">@L["Status.Save", job.DownloadName ?? string.Empty]</a>
                             break;
                         case JobStatus.Completed:
-                            <p class="status done">Saved. Check your Downloads folder.</p>
+                            <p class="status done">@L["Status.Saved"]</p>
+                            break;
+                        case JobStatus.Cancelled:
+                            <p class="error" role="alert">@L["Status.Cancelled"]</p>
                             break;
                         default:
-                            <p class="error" role="alert">@job.Message</p>
+                            <p class="error" role="alert">@L[$"Error.{job.Error}"]</p>
                             break;
                     }
                 }
@@ -136,6 +141,17 @@
     private QualityOption? _selected;
     private JobSnapshot? _job;
     private bool _includeSound = true;
+
+    /// <summary>Sizes in the current language, e.g. "3,3 МБ".</summary>
+    private string Size(long? bytes) => SizeFormatter.Format(
+        bytes, new SizeUnits(L["Size.KB"], L["Size.MB"], L["Size.GB"], L["Size.Unknown"]), CultureInfo.CurrentCulture);
+
+    private string DownloadLabel(QualityOption option) => option switch
+    {
+        { Mp3BitrateKbps: { } kbps } => L["Home.Download", L["Home.Mp3", kbps].Value],
+        { Kind: QualityKind.Video, HasAudio: false } => L["Home.DownloadNoSound", option.Label],
+        _ => L["Home.Download", option.Label],
+    };
 
     private void SetIncludeSound(VideoMetadata video, bool include)
     {
